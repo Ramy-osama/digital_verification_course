@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VLSI PNR Flow - From Logic to Layout</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 50%, #0d0d3a 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 30px 40px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2.4em;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff6bcb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 1.1em;
+    color: #8899bb;
+    margin-bottom: 35px;
+    font-weight: 300;
+  }
+
+  .flow-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .stage {
+    flex: 1;
+    min-width: 180px;
+    max-width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .stage-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    border: 2px solid;
+  }
+
+  .stage:nth-child(1) .stage-number { background: rgba(0,212,255,0.15); border-color: #00d4ff; color: #00d4ff; }
+  .stage:nth-child(3) .stage-number { background: rgba(123,47,247,0.15); border-color: #7b2ff7; color: #c49dff; }
+  .stage:nth-child(5) .stage-number { background: rgba(255,165,0,0.15); border-color: #ffa500; color: #ffa500; }
+  .stage:nth-child(7) .stage-number { background: rgba(0,200,83,0.15); border-color: #00c853; color: #00c853; }
+  .stage:nth-child(9) .stage-number { background: rgba(255,82,82,0.15); border-color: #ff5252; color: #ff5252; }
+  .stage:nth-child(11) .stage-number { background: rgba(255,107,203,0.15); border-color: #ff6bcb; color: #ff6bcb; }
+
+  .stage-title {
+    font-size: 0.95em;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 12px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stage:nth-child(1) .stage-title { color: #00d4ff; }
+  .stage:nth-child(3) .stage-title { color: #c49dff; }
+  .stage:nth-child(5) .stage-title { color: #ffa500; }
+  .stage:nth-child(7) .stage-title { color: #00c853; }
+  .stage:nth-child(9) .stage-title { color: #ff5252; }
+  .stage:nth-child(11) .stage-title { color: #ff6bcb; }
+
+  .visual-box {
+    width: 180px;
+    height: 180px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stage:nth-child(1) .visual-box { background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.02)); border: 1.5px solid rgba(0,212,255,0.3); }
+  .stage:nth-child(3) .visual-box { background: linear-gradient(135deg, rgba(123,47,247,0.08), rgba(123,47,247,0.02)); border: 1.5px solid rgba(123,47,247,0.3); }
+  .stage:nth-child(5) .visual-box { background: linear-gradient(135deg, rgba(255,165,0,0.08), rgba(255,165,0,0.02)); border: 1.5px solid rgba(255,165,0,0.3); }
+  .stage:nth-child(7) .visual-box { background: linear-gradient(135deg, rgba(0,200,83,0.08), rgba(0,200,83,0.02)); border: 1.5px solid rgba(0,200,83,0.3); }
+  .stage:nth-child(9) .visual-box { background: linear-gradient(135deg, rgba(255,82,82,0.08), rgba(255,82,82,0.02)); border: 1.5px solid rgba(255,82,82,0.3); }
+  .stage:nth-child(11) .visual-box { background: linear-gradient(135deg, rgba(255,107,203,0.08), rgba(255,107,203,0.02)); border: 1.5px solid rgba(255,107,203,0.3); }
+
+  .stage-desc {
+    font-size: 0.75em;
+    color: #8899aa;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 170px;
+  }
+
+  /* Arrow between stages */
+  .arrow-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 95px;
+    min-width: 40px;
+  }
+
+  .arrow-col svg {
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));
+  }
+
+  /* ====== SVG Illustrations Inside Boxes ====== */
+
+  /* Gate-level schematic */
+  .gates-svg { width: 160px; height: 160px; }
+  .netlist-svg { width: 160px; height: 160px; }
+  .floorplan-svg { width: 160px; height: 160px; }
+  .placement-svg { width: 160px; height: 160px; }
+  .cts-svg { width: 160px; height: 160px; }
+  .layout-svg { width: 160px; height: 160px; }
+
+  /* Tool labels */
+  .tool-label {
+    display: inline-block;
+    font-size: 0.65em;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .stage:nth-child(1) .tool-label { background: rgba(0,212,255,0.12); color: #00d4ff; border: 1px solid rgba(0,212,255,0.25); }
+  .stage:nth-child(3) .tool-label { background: rgba(123,47,247,0.12); color: #c49dff; border: 1px solid rgba(123,47,247,0.25); }
+  .stage:nth-child(5) .tool-label { background: rgba(255,165,0,0.12); color: #ffa500; border: 1px solid rgba(255,165,0,0.25); }
+  .stage:nth-child(7) .tool-label { background: rgba(0,200,83,0.12); color: #00c853; border: 1px solid rgba(0,200,83,0.25); }
+  .stage:nth-child(9) .tool-label { background: rgba(255,82,82,0.12); color: #ff5252; border: 1px solid rgba(255,82,82,0.25); }
+  .stage:nth-child(11) .tool-label { background: rgba(255,107,203,0.12); color: #ff6bcb; border: 1px solid rgba(255,107,203,0.25); }
+
+  /* Bottom legend bar */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8em;
+    color: #8899aa;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .footer-note {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.75em;
+    color: #556677;
+  }
+</style>
+</head>
+<body>
+
+<h1>From Logic Gates to Physical Layout</h1>
+<p class="subtitle">The VLSI Place &amp; Route (PNR) Flow</p>
+
+<div class="flow-container">
+
+  <!-- Stage 1: RTL / Logic Gates -->
+  <div class="stage">
+    <div class="stage-number">1</div>
+    <div class="stage-title">RTL / Logic<br>Gates</div>
+    <div class="visual-box">
+      <svg class="gates-svg" viewBox="0 0 160 160">
+        <!-- AND gate -->
+        <path d="M20,30 L50,30 Q72,30 72,50 Q72,70 50,70 L20,70 Z" fill="none" stroke="#00d4ff" stroke-width="1.8"/>
+        <line x1="8" y1="40" x2="20" y2="40" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="3" y="43" fill="#5bc0de" font-size="7" font-family="monospace">A</text>
+        <line x1="8" y1="60" x2="20" y2="60" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="3" y="63" fill="#5bc0de" font-size="7" font-family="monospace">B</text>
+        <line x1="72" y1="50" x2="88" y2="50" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="75" y="45" fill="#5bc0de" font-size="6">AND</text>
+
+        <!-- OR gate -->
+        <path d="M20,90 Q35,90 50,100 Q35,110 20,110 Q35,100 20,90 Z" fill="none" stroke="#00d4ff" stroke-width="1.8" transform="scale(1.3) translate(-2,-4)"/>
+        <line x1="8" y1="105" x2="22" y2="105" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="3" y="108" fill="#5bc0de" font-size="7" font-family="monospace">C</text>
+        <line x1="8" y1="122" x2="22" y2="122" stroke="#00d4ff" stroke-width="1.5"/>
+        <line x1="88" y1="50" x2="88" y2="113" stroke="#00d4ff" stroke-width="1.3" stroke-dasharray="3,2"/>
+        <line x1="62" y1="113" x2="88" y2="113" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="65" y="108" fill="#5bc0de" font-size="6">OR</text>
+
+        <!-- NOT (inverter) -->
+        <polygon points="100,100 130,113 100,126" fill="none" stroke="#00d4ff" stroke-width="1.8"/>
+        <circle cx="133" cy="113" r="3.5" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+        <line x1="88" y1="113" x2="100" y2="113" stroke="#00d4ff" stroke-width="1.5"/>
+        <line x1="137" y1="113" x2="152" y2="113" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="140" y="110" fill="#5bc0de" font-size="7" font-family="monospace">Y</text>
+        <text x="105" y="108" fill="#5bc0de" font-size="6">INV</text>
+
+        <!-- Wires -->
+        <line x1="88" y1="50" x2="100" y2="50" stroke="#00d4ff" stroke-width="1" stroke-dasharray="2,2"/>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      Boolean logic expressed as<br>combinational &amp; sequential gates
+    </div>
+    <div class="tool-label">HDL / Schematic</div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-col">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7b2ff7"/></linearGradient></defs>
+      <path d="M2,12 L26,12" stroke="url(#g1)" stroke-width="2.5" fill="none"/>
+      <polygon points="25,6 34,12 25,18" fill="#7b2ff7"/>
+    </svg>
+  </div>
+
+  <!-- Stage 2: Synthesis / Gate-Level Netlist -->
+  <div class="stage">
+    <div class="stage-number">2</div>
+    <div class="stage-title">Synthesis<br>(Gate Netlist)</div>
+    <div class="visual-box">
+      <svg class="netlist-svg" viewBox="0 0 160 160">
+        <!-- Standard cells as rectangles -->
+        <rect x="15" y="15" width="40" height="24" rx="4" fill="rgba(123,47,247,0.15)" stroke="#7b2ff7" stroke-width="1.5"/>
+        <text x="22" y="30" fill="#c49dff" font-size="8" font-family="monospace">NAND2</text>
+
+        <rect x="100" y="15" width="45" height="24" rx="4" fill="rgba(123,47,247,0.15)" stroke="#7b2ff7" stroke-width="1.5"/>
+        <text x="107" y="30" fill="#c49dff" font-size="8" font-family="monospace">NOR2</text>
+
+        <rect x="55" y="60" width="50" height="24" rx="4" fill="rgba(123,47,247,0.15)" stroke="#7b2ff7" stroke-width="1.5"/>
+        <text x="65" y="75" fill="#c49dff" font-size="8" font-family="monospace">INV</text>
+
+        <rect x="15" y="105" width="42" height="24" rx="4" fill="rgba(123,47,247,0.15)" stroke="#7b2ff7" stroke-width="1.5"/>
+        <text x="23" y="120" fill="#c49dff" font-size="8" font-family="monospace">DFF</text>
+
+        <rect x="95" y="105" width="50" height="24" rx="4" fill="rgba(123,47,247,0.15)" stroke="#7b2ff7" stroke-width="1.5"/>
+        <text x="102" y="120" fill="#c49dff" font-size="8" font-family="monospace">AOI21</text>
+
+        <!-- Nets -->
+        <line x1="55" y1="27" x2="100" y2="27" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="35" y1="39" x2="35" y2="60" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="35" y1="60" x2="55" y2="65" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="122" y1="39" x2="122" y2="50" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="105" y1="72" x2="122" y2="50" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="80" y1="84" x2="80" y2="95" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="80" y1="95" x2="36" y2="105" stroke="#9b59b6" stroke-width="1.2"/>
+        <line x1="80" y1="95" x2="120" y2="105" stroke="#9b59b6" stroke-width="1.2"/>
+
+        <!-- Net dots -->
+        <circle cx="80" cy="95" r="2.5" fill="#9b59b6"/>
+        <circle cx="35" cy="60" r="2" fill="#9b59b6"/>
+
+        <!-- Label -->
+        <text x="12" y="150" fill="#665599" font-size="7" font-style="italic">Technology-mapped netlist</text>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      RTL mapped to technology<br>library standard cells
+    </div>
+    <div class="tool-label">Design Compiler / Genus</div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-col">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7b2ff7"/><stop offset="100%" stop-color="#ffa500"/></linearGradient></defs>
+      <path d="M2,12 L26,12" stroke="url(#g2)" stroke-width="2.5" fill="none"/>
+      <polygon points="25,6 34,12 25,18" fill="#ffa500"/>
+    </svg>
+  </div>
+
+  <!-- Stage 3: Floorplan -->
+  <div class="stage">
+    <div class="stage-number">3</div>
+    <div class="stage-title">Floorplanning</div>
+    <div class="visual-box">
+      <svg class="floorplan-svg" viewBox="0 0 160 160">
+        <!-- Die boundary -->
+        <rect x="10" y="10" width="140" height="140" rx="3" fill="none" stroke="#ffa500" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <!-- IO pads around edges -->
+        <rect x="25" y="10" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="50" y="10" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="75" y="10" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="100" y="10" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="125" y="10" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <!-- bottom pads -->
+        <rect x="25" y="142" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="50" y="142" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="100" y="142" width="12" height="8" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <!-- left pads -->
+        <rect x="10" y="35" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="10" y="65" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="10" y="100" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <!-- right pads -->
+        <rect x="142" y="40" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="142" y="80" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+        <rect x="142" y="110" width="8" height="12" fill="rgba(255,165,0,0.3)" stroke="#ffa500" stroke-width="0.8"/>
+
+        <!-- Macro blocks -->
+        <rect x="25" y="30" width="50" height="35" rx="3" fill="rgba(255,200,0,0.12)" stroke="#ffcc00" stroke-width="1.5"/>
+        <text x="32" y="52" fill="#ffcc00" font-size="8" font-weight="600">SRAM</text>
+
+        <rect x="90" y="30" width="48" height="30" rx="3" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+        <text x="100" y="49" fill="#ff8c00" font-size="8" font-weight="600">PLL</text>
+
+        <!-- Core area -->
+        <rect x="25" y="75" width="113" height="60" rx="3" fill="rgba(255,165,0,0.05)" stroke="#ffa500" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="52" y="108" fill="#cc8800" font-size="9" font-style="italic">Core Area</text>
+        <text x="42" y="120" fill="#996600" font-size="7">(std cell rows here)</text>
+
+        <!-- Power ring hint -->
+        <rect x="20" y="25" width="124" height="118" rx="2" fill="none" stroke="rgba(255,100,0,0.25)" stroke-width="3"/>
+        <text x="40" y="148" fill="#885500" font-size="6">Power Ring</text>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      Define die area, place macros,<br>I/O pads &amp; power grid
+    </div>
+    <div class="tool-label">ICC2 / Innovus</div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-col">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ffa500"/><stop offset="100%" stop-color="#00c853"/></linearGradient></defs>
+      <path d="M2,12 L26,12" stroke="url(#g3)" stroke-width="2.5" fill="none"/>
+      <polygon points="25,6 34,12 25,18" fill="#00c853"/>
+    </svg>
+  </div>
+
+  <!-- Stage 4: Placement -->
+  <div class="stage">
+    <div class="stage-number">4</div>
+    <div class="stage-title">Placement</div>
+    <div class="visual-box">
+      <svg class="placement-svg" viewBox="0 0 160 160">
+        <!-- Chip boundary -->
+        <rect x="8" y="8" width="144" height="144" rx="2" fill="none" stroke="#00c853" stroke-width="1.5"/>
+
+        <!-- Rows of standard cells -->
+        <!-- Row 1 -->
+        <rect x="14" y="16" width="22" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="38" y="16" width="16" height="12" rx="1" fill="rgba(0,200,83,0.25)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="56" y="16" width="28" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="88" y="16" width="18" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="108" y="16" width="24" height="12" rx="1" fill="rgba(0,200,83,0.18)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="134" y="16" width="14" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 2 -->
+        <rect x="14" y="32" width="18" height="12" rx="1" fill="rgba(0,200,83,0.18)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="34" y="32" width="30" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="68" y="32" width="14" height="12" rx="1" fill="rgba(0,200,83,0.28)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="84" y="32" width="24" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="112" y="32" width="20" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="134" y="32" width="14" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 3 -->
+        <rect x="14" y="48" width="26" height="12" rx="1" fill="rgba(0,200,83,0.25)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="42" y="48" width="20" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="64" y="48" width="32" height="12" rx="1" fill="rgba(0,200,83,0.12)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="100" y="48" width="16" height="12" rx="1" fill="rgba(0,200,83,0.28)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="118" y="48" width="28" height="12" rx="1" fill="rgba(0,200,83,0.18)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 4 -->
+        <rect x="14" y="64" width="14" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="30" y="64" width="24" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="58" y="64" width="22" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="82" y="64" width="28" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="114" y="64" width="18" height="12" rx="1" fill="rgba(0,200,83,0.25)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="134" y="64" width="14" height="12" rx="1" fill="rgba(0,200,83,0.12)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 5 -->
+        <rect x="14" y="80" width="20" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="38" y="80" width="26" height="12" rx="1" fill="rgba(0,200,83,0.28)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="68" y="80" width="18" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="90" y="80" width="30" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="124" y="80" width="22" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 6 -->
+        <rect x="14" y="96" width="32" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="50" y="96" width="14" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="68" y="96" width="24" height="12" rx="1" fill="rgba(0,200,83,0.18)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="96" y="96" width="20" height="12" rx="1" fill="rgba(0,200,83,0.25)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="120" y="96" width="26" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 7 -->
+        <rect x="14" y="112" width="18" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="36" y="112" width="28" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="68" y="112" width="16" height="12" rx="1" fill="rgba(0,200,83,0.28)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="88" y="112" width="22" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="114" y="112" width="32" height="12" rx="1" fill="rgba(0,200,83,0.18)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Row 8 -->
+        <rect x="14" y="128" width="24" height="12" rx="1" fill="rgba(0,200,83,0.28)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="42" y="128" width="20" height="12" rx="1" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="66" y="128" width="30" height="12" rx="1" fill="rgba(0,200,83,0.22)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="100" y="128" width="14" height="12" rx="1" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="0.8"/>
+        <rect x="118" y="128" width="28" height="12" rx="1" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="0.8"/>
+
+        <!-- Labels in cells -->
+        <text x="17" y="25" fill="#33aa55" font-size="5.5" font-family="monospace">AND</text>
+        <text x="39" y="25" fill="#33aa55" font-size="5.5" font-family="monospace">OR</text>
+        <text x="59" y="25" fill="#33aa55" font-size="5.5" font-family="monospace">NAND</text>
+        <text x="90" y="25" fill="#33aa55" font-size="5.5" font-family="monospace">INV</text>
+        <text x="111" y="25" fill="#33aa55" font-size="5.5" font-family="monospace">DFF</text>
+        <text x="36" y="41" fill="#33aa55" font-size="5.5" font-family="monospace">MUX</text>
+        <text x="85" y="41" fill="#33aa55" font-size="5.5" font-family="monospace">BUF</text>
+
+        <text x="40" y="152" fill="#226633" font-size="7" font-style="italic">Cells placed in rows</text>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      Standard cells placed in<br>rows minimizing wirelength
+    </div>
+    <div class="tool-label">ICC2 / Innovus</div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-col">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00c853"/><stop offset="100%" stop-color="#ff5252"/></linearGradient></defs>
+      <path d="M2,12 L26,12" stroke="url(#g4)" stroke-width="2.5" fill="none"/>
+      <polygon points="25,6 34,12 25,18" fill="#ff5252"/>
+    </svg>
+  </div>
+
+  <!-- Stage 5: CTS + Routing -->
+  <div class="stage">
+    <div class="stage-number">5</div>
+    <div class="stage-title">CTS &amp;<br>Routing</div>
+    <div class="visual-box">
+      <svg class="cts-svg" viewBox="0 0 160 160">
+        <!-- Clock tree (top portion) -->
+        <text x="55" y="12" fill="#ff5252" font-size="7" font-weight="600">Clock Tree</text>
+        <!-- Root -->
+        <circle cx="80" cy="24" r="4" fill="#ff5252" stroke="#ff5252" stroke-width="1"/>
+        <text x="87" y="27" fill="#ff7777" font-size="6">CLK</text>
+        <!-- Level 1 -->
+        <line x1="80" y1="28" x2="45" y2="42" stroke="#ff5252" stroke-width="1.2"/>
+        <line x1="80" y1="28" x2="115" y2="42" stroke="#ff5252" stroke-width="1.2"/>
+        <rect x="37" y="38" width="16" height="10" rx="2" fill="rgba(255,82,82,0.2)" stroke="#ff5252" stroke-width="1"/>
+        <text x="40" y="46" fill="#ff7777" font-size="5">BUF</text>
+        <rect x="107" y="38" width="16" height="10" rx="2" fill="rgba(255,82,82,0.2)" stroke="#ff5252" stroke-width="1"/>
+        <text x="110" y="46" fill="#ff7777" font-size="5">BUF</text>
+        <!-- Level 2 -->
+        <line x1="45" y1="48" x2="25" y2="60" stroke="#ff5252" stroke-width="1"/>
+        <line x1="45" y1="48" x2="65" y2="60" stroke="#ff5252" stroke-width="1"/>
+        <line x1="115" y1="48" x2="95" y2="60" stroke="#ff5252" stroke-width="1"/>
+        <line x1="115" y1="48" x2="135" y2="60" stroke="#ff5252" stroke-width="1"/>
+        <!-- Leaf cells -->
+        <rect x="17" y="58" width="16" height="8" rx="1" fill="rgba(255,82,82,0.15)" stroke="#ff5252" stroke-width="0.8"/>
+        <rect x="57" y="58" width="16" height="8" rx="1" fill="rgba(255,82,82,0.15)" stroke="#ff5252" stroke-width="0.8"/>
+        <rect x="87" y="58" width="16" height="8" rx="1" fill="rgba(255,82,82,0.15)" stroke="#ff5252" stroke-width="0.8"/>
+        <rect x="127" y="58" width="16" height="8" rx="1" fill="rgba(255,82,82,0.15)" stroke="#ff5252" stroke-width="0.8"/>
+        <text x="20" y="64" fill="#ff9999" font-size="4.5">FF</text>
+        <text x="60" y="64" fill="#ff9999" font-size="4.5">FF</text>
+        <text x="90" y="64" fill="#ff9999" font-size="4.5">FF</text>
+        <text x="130" y="64" fill="#ff9999" font-size="4.5">FF</text>
+
+        <!-- Separator -->
+        <line x1="10" y1="75" x2="150" y2="75" stroke="rgba(255,82,82,0.2)" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <text x="55" y="85" fill="#ff5252" font-size="7" font-weight="600">Signal Routes</text>
+
+        <!-- Metal routing layers -->
+        <!-- Horizontal routes (M1) -->
+        <line x1="15" y1="95" x2="75" y2="95" stroke="#44aaff" stroke-width="1.8"/>
+        <line x1="55" y1="108" x2="145" y2="108" stroke="#44aaff" stroke-width="1.8"/>
+        <line x1="20" y1="122" x2="110" y2="122" stroke="#44aaff" stroke-width="1.8"/>
+        <line x1="80" y1="135" x2="140" y2="135" stroke="#44aaff" stroke-width="1.8"/>
+
+        <!-- Vertical routes (M2) -->
+        <line x1="35" y1="90" x2="35" y2="125" stroke="#ff9944" stroke-width="1.8"/>
+        <line x1="75" y1="92" x2="75" y2="140" stroke="#ff9944" stroke-width="1.8"/>
+        <line x1="110" y1="100" x2="110" y2="130" stroke="#ff9944" stroke-width="1.8"/>
+        <line x1="140" y1="105" x2="140" y2="140" stroke="#ff9944" stroke-width="1.8"/>
+
+        <!-- Vias -->
+        <rect x="33" y="93" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="73" y="93" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="73" y="133" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="108" y="106" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="108" y="120" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="138" y="106" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <rect x="138" y="133" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+
+        <!-- Legend mini -->
+        <line x1="15" y1="150" x2="25" y2="150" stroke="#44aaff" stroke-width="1.5"/>
+        <text x="28" y="152" fill="#5588aa" font-size="5">M1</text>
+        <line x1="48" y1="150" x2="58" y2="150" stroke="#ff9944" stroke-width="1.5"/>
+        <text x="61" y="152" fill="#aa7744" font-size="5">M2</text>
+        <rect x="82" y="148" width="4" height="4" fill="#ffee44" stroke="#ffcc00" stroke-width="0.5"/>
+        <text x="89" y="152" fill="#aaaa44" font-size="5">Via</text>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      Clock tree synthesis &amp; metal<br>layer routing of all signals
+    </div>
+    <div class="tool-label">ICC2 / Innovus</div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow-col">
+    <svg width="36" height="24" viewBox="0 0 36 24">
+      <defs><linearGradient id="g5" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff5252"/><stop offset="100%" stop-color="#ff6bcb"/></linearGradient></defs>
+      <path d="M2,12 L26,12" stroke="url(#g5)" stroke-width="2.5" fill="none"/>
+      <polygon points="25,6 34,12 25,18" fill="#ff6bcb"/>
+    </svg>
+  </div>
+
+  <!-- Stage 6: Final Layout (GDS) -->
+  <div class="stage">
+    <div class="stage-number">6</div>
+    <div class="stage-title">Physical Layout<br>(GDSII)</div>
+    <div class="visual-box">
+      <svg class="layout-svg" viewBox="0 0 160 160">
+        <!-- Multi-layer layout view -->
+        <!-- Substrate / diffusion (bottom layer) -->
+        <rect x="12" y="15" width="30" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="48" y="15" width="22" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="76" y="15" width="35" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="118" y="15" width="28" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+
+        <rect x="12" y="33" width="26" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="44" y="33" width="32" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="82" y="33" width="18" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="106" y="33" width="40" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+
+        <rect x="12" y="51" width="20" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="38" y="51" width="28" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="72" y="51" width="24" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+        <rect x="102" y="51" width="44" height="14" rx="1" fill="rgba(0,150,0,0.25)" stroke="#00aa00" stroke-width="0.8"/>
+
+        <!-- Polysilicon gates -->
+        <line x1="20" y1="12" x2="20" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="32" y1="12" x2="32" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="55" y1="12" x2="55" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="85" y1="12" x2="85" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="98" y1="12" x2="98" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="125" y1="12" x2="125" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="138" y1="12" x2="138" y2="32" stroke="#ff4444" stroke-width="1.5"/>
+
+        <line x1="22" y1="30" x2="22" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="52" y1="30" x2="52" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="68" y1="30" x2="68" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="88" y1="30" x2="88" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="115" y1="30" x2="115" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="135" y1="30" x2="135" y2="50" stroke="#ff4444" stroke-width="1.5"/>
+
+        <line x1="18" y1="48" x2="18" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="45" y1="48" x2="45" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="58" y1="48" x2="58" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="80" y1="48" x2="80" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="110" y1="48" x2="110" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+        <line x1="130" y1="48" x2="130" y2="68" stroke="#ff4444" stroke-width="1.5"/>
+
+        <!-- Metal 1 (horizontal) -->
+        <line x1="10" y1="78" x2="70" y2="78" stroke="#4488ff" stroke-width="2.2" opacity="0.8"/>
+        <line x1="40" y1="88" x2="148" y2="88" stroke="#4488ff" stroke-width="2.2" opacity="0.8"/>
+        <line x1="10" y1="98" x2="100" y2="98" stroke="#4488ff" stroke-width="2.2" opacity="0.8"/>
+        <line x1="60" y1="108" x2="148" y2="108" stroke="#4488ff" stroke-width="2.2" opacity="0.8"/>
+        <line x1="10" y1="118" x2="80" y2="118" stroke="#4488ff" stroke-width="2.2" opacity="0.8"/>
+
+        <!-- Metal 2 (vertical) -->
+        <line x1="25" y1="74" x2="25" y2="122" stroke="#ffaa22" stroke-width="2.2" opacity="0.7"/>
+        <line x1="55" y1="74" x2="55" y2="112" stroke="#ffaa22" stroke-width="2.2" opacity="0.7"/>
+        <line x1="85" y1="84" x2="85" y2="122" stroke="#ffaa22" stroke-width="2.2" opacity="0.7"/>
+        <line x1="115" y1="84" x2="115" y2="112" stroke="#ffaa22" stroke-width="2.2" opacity="0.7"/>
+        <line x1="140" y1="84" x2="140" y2="118" stroke="#ffaa22" stroke-width="2.2" opacity="0.7"/>
+
+        <!-- Vias -->
+        <rect x="23" y="76" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="53" y="76" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="53" y="106" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="83" y="86" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="83" y="96" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="113" y="86" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="113" y="106" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+        <rect x="138" y="86" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.6"/>
+
+        <!-- Layer legend -->
+        <rect x="10" y="128" width="140" height="28" rx="3" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+        <rect x="16" y="134" width="10" height="5" fill="rgba(0,150,0,0.4)" stroke="#00aa00" stroke-width="0.5"/>
+        <text x="29" y="139" fill="#88bb88" font-size="5.5">Diffusion</text>
+        <line x1="65" y1="136" x2="75" y2="136" stroke="#ff4444" stroke-width="1.5"/>
+        <text x="78" y="139" fill="#ff8888" font-size="5.5">Poly</text>
+        <line x1="16" y1="148" x2="26" y2="148" stroke="#4488ff" stroke-width="2"/>
+        <text x="29" y="150" fill="#6699cc" font-size="5.5">Metal1</text>
+        <line x1="65" y1="148" x2="75" y2="148" stroke="#ffaa22" stroke-width="2"/>
+        <text x="78" y="150" fill="#cc9944" font-size="5.5">Metal2</text>
+        <rect x="105" y="146" width="4" height="4" fill="#ffee44" stroke="#ddcc00" stroke-width="0.5"/>
+        <text x="112" y="150" fill="#aaaa66" font-size="5.5">Via</text>
+      </svg>
+    </div>
+    <div class="stage-desc">
+      Final multi-layer physical<br>layout ready for fabrication
+    </div>
+    <div class="tool-label">GDSII / OASIS</div>
+  </div>
+
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#00d4ff;"></div>
+    <span>Logic Design</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#7b2ff7;"></div>
+    <span>Logic Synthesis</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#ffa500;"></div>
+    <span>Floorplanning</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#00c853;"></div>
+    <span>Placement</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#ff5252;"></div>
+    <span>CTS + Routing</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#ff6bcb;"></div>
+    <span>Physical Layout</span>
+  </div>
+</div>
+
+<p class="footer-note">VLSI Physical Design Flow &mdash; From RTL to GDSII</p>
+
+</body>
+</html>

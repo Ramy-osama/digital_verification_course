@@ -1,0 +1,78 @@
+`line 2 "mspa_pred_udps.v" 1
+`line 2 "mspa_pred_udps.v" 0
+/*=====MSPA PAGLS PREDEFINED UDPS =====*/
+primitive qpa_pwr_dwn_mux (mux_p, control, dataA, dataB);
+output mux_p;
+input control, dataA, dataB;
+table
+   //control dataA dataB  mux_p
+       1      1     ?   : 1  ;
+       1      0     ?   : 0  ;
+       1      x     ?   : x  ;
+       0      ?     1   : 1  ;
+       0      ?     0   : 0  ;
+       0      ?     x   : x  ;
+       x      ?     0   : 0  ;
+       x      ?     1   : 1  ;
+       x      ?     x   : x  ;
+endtable
+endprimitive
+primitive qpa_pwr_down_seq_logic (rc, pwr, clk_load, async_load );
+output rc; reg rc;
+input pwr, clk_load, async_load; //Active High
+initial rc = 1'b1;
+table
+  //pwr clk_load async_load : rc : rc+
+   0     ?          ?     :  ? : 0;
+   1     (01)       ?     :  ? : 1;
+   1     (x1)       ?     :  ? : -;
+   1     (?0)       ?     :  ? : -;
+   1     (?x)       ?     :  ? : -;
+   1     ?          (?1)  :  ? : 1;
+   1     ?          (?x)  :  ? : -;
+   1     ?          (?0)  :  ? : -;
+   (?1)  ?          1     :  ? : 1;
+   (?1)  ?          0     :  x : 0;
+   (?1)  ?          x     :  x : 0;
+   (?1)  ?          0     :  b : -;
+   (?1)  ?          x     :  b : -;
+   x     ?          ?     :  ? : x;
+endtable
+endprimitive
+primitive qpa_udp_ret_latch (op, qin, store_val, store_x);
+output op; reg op;
+input qin, store_val, store_x;
+initial op = 1'bx;
+table
+// qin   store_val   store_x     op      op+
+    1      (01)         ?      :  ?    :  1;
+    0      (01)         ?      :  ?    :  0;
+    x      (01)         ?      :  ?    :  x;
+    ?       ?          (01)    :  ?    :  x;
+// ignore qin transition when no ret/corr activity 
+    ?      (10)         ?      :  ?    :  -;
+    ?       ?          (10)    :  ?    :  -;
+   (??)     ?           ?      :  ?    :  -;
+endtable
+endprimitive
+
+
+
+primitive qpa_udp_ret_crpt_logic (op, latchin, restore, corrupt, rel);
+output op; reg op;
+input latchin, restore, corrupt, rel;
+initial op = 1'bx;
+table
+// latchin restore  corrupt   rel   op   op+
+    1         1        0       0  :  ?  :  1;
+    0         1        0       0  :  ?  :  0;
+    x         1        0       0  :  ?  :  x;
+    ?         0        0       1  :  ?  :  -;
+// take care of simultaneous transitions
+    ?         0        0       0  :  ?  :  -;
+    ?         1        0       1  :  ?  :  -;
+    ?         ?        1       ?  :  ?  :  x;
+endtable
+endprimitive
+
+

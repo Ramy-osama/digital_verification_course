@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Functional Verification — Deep Dive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, #0a0a1a 0%, #10102a 30%, #151535 60%, #0d0d20 100%);
+    min-height: 100vh;
+    padding: 40px 24px 60px;
+    color: #e0e0e0;
+  }
+
+  /* ── Title ── */
+  .title-section {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .title-section h1 {
+    font-size: 2.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #a855f7, #6c5ce7, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .title-section .subtitle {
+    font-size: 1.05rem;
+    color: #7878a0;
+    font-weight: 300;
+  }
+
+  /* ── Root node ── */
+  .root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .root-node {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a855f7 50%, #c084fc 100%);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 16px 44px;
+    border-radius: 14px;
+    box-shadow: 0 6px 28px rgba(108, 92, 231, 0.5);
+    text-align: center;
+  }
+  .v-pipe { width: 3px; height: 32px; background: #6c5ce7; }
+  .v-pipe-sm { width: 3px; height: 24px; background: #444; }
+
+  /* ── Tier-1: Two-row split ── */
+  .tier1-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .h-rail-full {
+    height: 3px;
+    background: linear-gradient(to right, transparent 2%, #6c5ce7 6%, #6c5ce7 94%, transparent 98%);
+    max-width: 1500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ── Branch wrapper ── */
+  .branch-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    padding: 0 6px;
+  }
+
+  /* ── Tier-1 card (category) ── */
+  .t1-card {
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 260px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+    transition: transform .22s, box-shadow .22s;
+  }
+  .t1-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  }
+  .t1-header {
+    padding: 13px 12px 11px;
+    text-align: center;
+  }
+  .t1-header .icon { font-size: 1.45rem; display: block; margin-bottom: 3px; }
+  .t1-header h3 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .t1-body {
+    background: rgba(12, 12, 28, 0.9);
+    padding: 10px 9px 13px;
+  }
+
+  /* ── Sub-group ── */
+  .sg { margin-bottom: 9px; }
+  .sg:last-child { margin-bottom: 0; }
+  .sg-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #888;
+    margin-bottom: 4px;
+    padding-left: 3px;
+  }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 4px 7px;
+    margin-bottom: 2px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: #c5c5d8;
+    background: rgba(255,255,255,0.03);
+    line-height: 1.35;
+  }
+  .item:hover { background: rgba(255,255,255,0.08); }
+  .item .d {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .item .tag {
+    font-size: 0.55rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* ── Theme colors ── */
+  .th-sim .t1-header     { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+  .th-sim .d             { background: #a78bfa; }
+  .th-sim .tag           { background: rgba(167,139,250,.18); color: #a78bfa; }
+
+  .th-meth .t1-header    { background: linear-gradient(135deg, #2563eb, #60a5fa); }
+  .th-meth .d            { background: #60a5fa; }
+  .th-meth .tag          { background: rgba(96,165,250,.18); color: #60a5fa; }
+
+  .th-abv .t1-header     { background: linear-gradient(135deg, #0891b2, #22d3ee); }
+  .th-abv .d             { background: #22d3ee; }
+  .th-abv .tag           { background: rgba(34,211,238,.18); color: #22d3ee; }
+
+  .th-formal .t1-header  { background: linear-gradient(135deg, #0d9488, #2dd4bf); }
+  .th-formal .d          { background: #2dd4bf; }
+  .th-formal .tag        { background: rgba(45,212,191,.18); color: #2dd4bf; }
+
+  .th-emu .t1-header     { background: linear-gradient(135deg, #d97706, #fbbf24); }
+  .th-emu .d             { background: #fbbf24; }
+  .th-emu .tag           { background: rgba(251,191,36,.18); color: #fbbf24; }
+  .th-emu .t1-header h3  { color: #1a1a2e; }
+
+  .th-cov .t1-header     { background: linear-gradient(135deg, #e11d48, #fb7185); }
+  .th-cov .d             { background: #fb7185; }
+  .th-cov .tag           { background: rgba(251,113,133,.18); color: #fb7185; }
+
+  .th-static .t1-header  { background: linear-gradient(135deg, #9333ea, #c084fc); }
+  .th-static .d          { background: #c084fc; }
+  .th-static .tag        { background: rgba(192,132,252,.18); color: #c084fc; }
+
+  /* ── Row layouts ── */
+  .row-top { margin-bottom: 0; }
+  .spacer-row { height: 32px; }
+
+  .row-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1500px;
+    margin: 28px auto 14px;
+    padding: 0 10px;
+  }
+  .row-label .rl-text {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #6c5ce7;
+    white-space: nowrap;
+  }
+  .row-label .rl-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #6c5ce7 0%, transparent 100%);
+  }
+
+  /* ── Relationship diagram ── */
+  .relationship-section {
+    max-width: 1200px;
+    margin: 48px auto 0;
+  }
+  .rel-title {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #a78bfa;
+    margin-bottom: 20px;
+  }
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    padding: 24px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+  }
+  .flow-box {
+    padding: 14px 18px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+    min-width: 120px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+  .flow-arrow {
+    font-size: 1.3rem;
+    color: #555;
+    padding: 0 8px;
+    line-height: 1;
+  }
+  .flow-label {
+    font-size: 0.6rem;
+    color: #777;
+    text-align: center;
+    margin-top: -2px;
+    font-weight: 400;
+  }
+  .flow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── Comparison table ── */
+  .comparison-section {
+    max-width: 1200px;
+    margin: 40px auto 0;
+  }
+  .comp-title {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 16px;
+  }
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .comp-table thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.68rem;
+    background: rgba(108,92,231,0.25);
+    color: #c4b5fd;
+    border-bottom: 2px solid rgba(108,92,231,0.3);
+  }
+  .comp-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: #b0b0c8;
+    vertical-align: top;
+  }
+  .comp-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+  .comp-table tbody td:first-child {
+    font-weight: 600;
+    color: #d0d0e8;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.62rem;
+    font-weight: 600;
+  }
+  .badge-fast   { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge-med    { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .badge-slow   { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-high   { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .badge-low    { background: rgba(156,163,175,0.15); color: #9ca3af; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    margin: 40px auto 0;
+    padding: 16px 28px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    max-width: 1200px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.73rem;
+    color: #999;
+  }
+  .legend-swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #444;
+    font-size: 0.7rem;
+    font-weight: 300;
+  }
+
+  @media print {
+    body { background: #fff; color: #222; }
+    .t1-body { background: #f5f5fa; }
+    .item { color: #333; }
+    .comp-table tbody td { color: #333; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ TITLE ════════════════ -->
+<div class="title-section">
+  <h1>Functional Verification — Deep Dive</h1>
+  <div class="subtitle">Complete Taxonomy of Functional Verification Techniques in VLSI</div>
+</div>
+
+<!-- ════════════════ ROOT ════════════════ -->
+<div class="root">
+  <div class="root-node">Functional Verification</div>
+  <div class="v-pipe"></div>
+</div>
+
+<!-- ════════════════ TOP ROW (4 categories) ════════════════ -->
+<div class="row-label"><span class="rl-text">Dynamic Techniques</span><span class="rl-line"></span></div>
+<div class="h-rail-full"></div>
+<div class="tier1-row row-top">
+
+  <!-- 1 ─ Simulation-Based -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-sim">
+      <div class="t1-header"><span class="icon">🔬</span><h3>Simulation-Based</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Test Strategies</div>
+          <div class="item"><span class="d"></span>Directed Testing<span class="tag">Manual</span></div>
+          <div class="item"><span class="d"></span>Random Testing<span class="tag">Basic</span></div>
+          <div class="item"><span class="d"></span>Constrained Random (CRV)<span class="tag">Advanced</span></div>
+          <div class="item"><span class="d"></span>Coverage-Driven (CDV)<span class="tag">Best</span></div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Abstraction Levels</div>
+          <div class="item"><span class="d"></span>Transaction Level (TLM)</div>
+          <div class="item"><span class="d"></span>RTL Simulation</div>
+          <div class="item"><span class="d"></span>Gate-Level Simulation</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Tools</div>
+          <div class="item"><span class="d"></span>Synopsys VCS</div>
+          <div class="item"><span class="d"></span>Cadence Xcelium</div>
+          <div class="item"><span class="d"></span>Siemens Questa</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 ─ Methodology-Based -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-meth">
+      <div class="t1-header"><span class="icon">📦</span><h3>Verification Methodologies</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Industry Standard</div>
+          <div class="item"><span class="d"></span>UVM (Universal)<span class="tag">IEEE 1800.2</span></div>
+          <div class="item"><span class="d"></span>OVM (Open)<span class="tag">Legacy</span></div>
+          <div class="item"><span class="d"></span>VMM (Synopsys)<span class="tag">Legacy</span></div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">UVM Components</div>
+          <div class="item"><span class="d"></span>Agent (Driver + Monitor)</div>
+          <div class="item"><span class="d"></span>Sequencer & Sequences</div>
+          <div class="item"><span class="d"></span>Scoreboard & Predictor</div>
+          <div class="item"><span class="d"></span>Environment & Test</div>
+          <div class="item"><span class="d"></span>Virtual Sequences</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Emerging</div>
+          <div class="item"><span class="d"></span>Cocotb (Python-based)</div>
+          <div class="item"><span class="d"></span>PyUVM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 ─ Assertion-Based -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-abv">
+      <div class="t1-header"><span class="icon">✅</span><h3>Assertion-Based (ABV)</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">SVA Types</div>
+          <div class="item"><span class="d"></span>Immediate Assertions</div>
+          <div class="item"><span class="d"></span>Deferred Assertions</div>
+          <div class="item"><span class="d"></span>Concurrent Assertions</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">SVA Constructs</div>
+          <div class="item"><span class="d"></span>Sequences & Properties</div>
+          <div class="item"><span class="d"></span>Implication ( |-> , |=> )</div>
+          <div class="item"><span class="d"></span>Repetition [*n], [->n]</div>
+          <div class="item"><span class="d"></span>throughout / within</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Other Standards</div>
+          <div class="item"><span class="d"></span>PSL (IEEE 1850)</div>
+          <div class="item"><span class="d"></span>OVL (Accellera)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 ─ Emulation & Prototyping -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-emu">
+      <div class="t1-header"><span class="icon">⚙️</span><h3>Emulation & Prototyping</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Hardware Emulation</div>
+          <div class="item"><span class="d"></span>Cadence Palladium</div>
+          <div class="item"><span class="d"></span>Siemens Veloce</div>
+          <div class="item"><span class="d"></span>Synopsys ZeBu</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">FPGA Prototyping</div>
+          <div class="item"><span class="d"></span>Synopsys HAPS</div>
+          <div class="item"><span class="d"></span>Cadence Protium</div>
+          <div class="item"><span class="d"></span>Custom FPGA boards</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Virtual Prototyping</div>
+          <div class="item"><span class="d"></span>SystemC / TLM 2.0</div>
+          <div class="item"><span class="d"></span>QEMU-based</div>
+          <div class="item"><span class="d"></span>SW Development Vehicle</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════ BOTTOM ROW (3 categories) ════════════════ -->
+<div class="row-label"><span class="rl-text">Static & Metric Techniques</span><span class="rl-line"></span></div>
+<div class="h-rail-full"></div>
+<div class="tier1-row">
+
+  <!-- 5 ─ Formal Verification -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-formal">
+      <div class="t1-header"><span class="icon">📐</span><h3>Formal Verification</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Core Techniques</div>
+          <div class="item"><span class="d"></span>Model Checking<span class="tag">Exhaustive</span></div>
+          <div class="item"><span class="d"></span>Equivalence Checking</div>
+          <div class="item"><span class="d"></span>Theorem Proving</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Equivalence Types</div>
+          <div class="item"><span class="d"></span>RTL vs RTL (LEC)</div>
+          <div class="item"><span class="d"></span>RTL vs Netlist</div>
+          <div class="item"><span class="d"></span>Netlist vs Netlist</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Applications</div>
+          <div class="item"><span class="d"></span>Property Verification</div>
+          <div class="item"><span class="d"></span>Connectivity Check</div>
+          <div class="item"><span class="d"></span>Deadlock / Livelock</div>
+          <div class="item"><span class="d"></span>X-Propagation Analysis</div>
+          <div class="item"><span class="d"></span>Security Verification</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Tools</div>
+          <div class="item"><span class="d"></span>Synopsys VC Formal</div>
+          <div class="item"><span class="d"></span>Cadence JasperGold</div>
+          <div class="item"><span class="d"></span>Siemens Questa Formal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 ─ Coverage -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-cov">
+      <div class="t1-header"><span class="icon">📊</span><h3>Coverage Metrics</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Code Coverage</div>
+          <div class="item"><span class="d"></span>Line / Statement Coverage</div>
+          <div class="item"><span class="d"></span>Branch / Decision Coverage</div>
+          <div class="item"><span class="d"></span>Toggle Coverage</div>
+          <div class="item"><span class="d"></span>FSM State & Transition</div>
+          <div class="item"><span class="d"></span>Condition / Expression</div>
+          <div class="item"><span class="d"></span>Path Coverage</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Functional Coverage</div>
+          <div class="item"><span class="d"></span>Covergroups</div>
+          <div class="item"><span class="d"></span>Coverpoints & Bins</div>
+          <div class="item"><span class="d"></span>Cross Coverage</div>
+          <div class="item"><span class="d"></span>Transition Coverage</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Closure</div>
+          <div class="item"><span class="d"></span>Coverage Merge</div>
+          <div class="item"><span class="d"></span>Exclusion Files</div>
+          <div class="item"><span class="d"></span>Coverage-Driven Closure</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 ─ Static Analysis -->
+  <div class="branch-wrap">
+    <div class="v-pipe-sm"></div>
+    <div class="t1-card th-static">
+      <div class="t1-header"><span class="icon">🔍</span><h3>Static Analysis</h3></div>
+      <div class="t1-body">
+        <div class="sg">
+          <div class="sg-title">Lint Checks</div>
+          <div class="item"><span class="d"></span>RTL Linting (Syntax/Semantic)</div>
+          <div class="item"><span class="d"></span>Synthesis Linting</div>
+          <div class="item"><span class="d"></span>Naming Convention Check</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Domain Analysis</div>
+          <div class="item"><span class="d"></span>CDC (Clock Domain Crossing)</div>
+          <div class="item"><span class="d"></span>RDC (Reset Domain Crossing)</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Other</div>
+          <div class="item"><span class="d"></span>X-Propagation / X-Pessimism</div>
+          <div class="item"><span class="d"></span>Connectivity Verification</div>
+          <div class="item"><span class="d"></span>Design Rule Checks</div>
+        </div>
+        <div class="sg">
+          <div class="sg-title">Tools</div>
+          <div class="item"><span class="d"></span>Synopsys SpyGlass</div>
+          <div class="item"><span class="d"></span>Cadence HAL / Conformal</div>
+          <div class="item"><span class="d"></span>Real Intent Ascent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════ VERIFICATION FLOW DIAGRAM ════════════════ -->
+<div class="relationship-section">
+  <div class="rel-title">Typical Functional Verification Flow</div>
+  <div class="flow-diagram">
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#9333ea,#c084fc)">Spec &<br>Planning</div>
+      <div class="flow-label">Verification Plan</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">Build<br>Testbench</div>
+      <div class="flow-label">UVM Env</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">Write<br>Assertions</div>
+      <div class="flow-label">SVA / PSL</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">Run<br>Simulation</div>
+      <div class="flow-label">CRV + Directed</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#0d9488,#2dd4bf)">Formal<br>Analysis</div>
+      <div class="flow-label">Model Check</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#e11d48,#fb7185)">Coverage<br>Analysis</div>
+      <div class="flow-label">Code + Functional</div>
+    </div>
+    <div class="flow-arrow">&#10132;</div>
+    <div class="flow-col">
+      <div class="flow-box" style="background:linear-gradient(135deg,#16a34a,#4ade80);color:#0a0a1a">Coverage<br>Closure</div>
+      <div class="flow-label">Sign-off</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ COMPARISON TABLE ════════════════ -->
+<div class="comparison-section">
+  <div class="comp-title">Technique Comparison Matrix</div>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Technique</th>
+        <th>Speed</th>
+        <th>Completeness</th>
+        <th>Effort</th>
+        <th>Bug-Finding</th>
+        <th>Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Directed Testing</td>
+        <td><span class="badge badge-fast">Fast</span></td>
+        <td><span class="badge badge-low">Low</span></td>
+        <td><span class="badge badge-high">High</span></td>
+        <td>Known scenarios</td>
+        <td>Specific corner cases, bring-up</td>
+      </tr>
+      <tr>
+        <td>Constrained Random</td>
+        <td><span class="badge badge-med">Medium</span></td>
+        <td><span class="badge badge-high">High</span></td>
+        <td><span class="badge badge-med">Medium</span></td>
+        <td>Unexpected bugs</td>
+        <td>Complex protocols, large designs</td>
+      </tr>
+      <tr>
+        <td>Formal Verification</td>
+        <td><span class="badge badge-slow">Slow</span></td>
+        <td><span class="badge badge-high">Exhaustive</span></td>
+        <td><span class="badge badge-high">High</span></td>
+        <td>Unreachable states, deadlocks</td>
+        <td>Control logic, protocols, FSMs</td>
+      </tr>
+      <tr>
+        <td>Assertion-Based</td>
+        <td><span class="badge badge-fast">Fast</span></td>
+        <td><span class="badge badge-med">Medium</span></td>
+        <td><span class="badge badge-low">Low</span></td>
+        <td>Protocol violations</td>
+        <td>Interface checks, invariants</td>
+      </tr>
+      <tr>
+        <td>Emulation</td>
+        <td><span class="badge badge-fast">Very Fast</span></td>
+        <td><span class="badge badge-med">Medium</span></td>
+        <td><span class="badge badge-high">High</span></td>
+        <td>System-level issues</td>
+        <td>Full-chip, SW/HW co-verification</td>
+      </tr>
+      <tr>
+        <td>FPGA Prototyping</td>
+        <td><span class="badge badge-fast">Fastest</span></td>
+        <td><span class="badge badge-low">Low</span></td>
+        <td><span class="badge badge-high">High</span></td>
+        <td>Real-world scenarios</td>
+        <td>SW bring-up, performance testing</td>
+      </tr>
+      <tr>
+        <td>Static Analysis (Lint)</td>
+        <td><span class="badge badge-fast">Instant</span></td>
+        <td><span class="badge badge-low">Low</span></td>
+        <td><span class="badge badge-low">Very Low</span></td>
+        <td>Coding errors</td>
+        <td>Early-stage sanity, coding style</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════ LEGEND ════════════════ -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"></div>Simulation</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#2563eb,#60a5fa)"></div>Methodologies</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#0891b2,#22d3ee)"></div>Assertions</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#0d9488,#2dd4bf)"></div>Formal</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#d97706,#fbbf24)"></div>Emulation</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#e11d48,#fb7185)"></div>Coverage</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#9333ea,#c084fc)"></div>Static Analysis</div>
+</div>
+
+<div class="footer">
+  Functional Verification Taxonomy &mdash; IEEE 1800-2017 / Accellera Standards
+</div>
+
+</body>
+</html>

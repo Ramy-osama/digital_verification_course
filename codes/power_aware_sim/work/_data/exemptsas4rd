@@ -1,0 +1,111 @@
+`line 2 "mspa_upf.sv" 1
+
+`mspa_module
+
+`define MSPA_UPF_ERROR_MODULE
+
+/*UPF model for Power Domain: "PD_GATED"*/
+module mspa28_power_domain_PD_GATED (
+
+);
+	import UPF::*;
+
+	/* Triggering Power Control Signal */
+	assign mspa_pack::mspa1_PD_GATED_DOMAIN_PWR = get_supply_on_state( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VDD_GATED ) && get_supply_on_state( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VSS_G ); ;
+mspa32_iso_strategy_iso_gated_to_aon iso_gated_to_aon (		.GND( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VSS ),
+		.PWR( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VDD ));
+endmodule /* Power Domain: PD_GATED */
+
+/* UPF model for Isolation Cell: "iso_gated_to_aon" inside Power Domain: "PD_GATED"*/
+module mspa32_iso_strategy_iso_gated_to_aon (
+	 GND,
+	 PWR
+);
+	import UPF::*;
+
+	input  supply_net_type GND;
+	input  supply_net_type PWR;
+	/* Declarations for Isolation Ctrl */
+	/* Declarations for Design Ctrl Ports */
+	reg mspa35_mspa34_iso_enable;
+	assign mspa35_mspa34_iso_enable = $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.mspa34_iso_enable;
+	assign mspa_pack::mspa2_iso_gated_to_aon_ISO_PWR = get_supply_on_state( GND ) && get_supply_on_state( PWR );
+
+	/* Triggering the ISO ctrl signal */
+	/* Logic for Triggering the control signal: "mspa_pack::mspa3_iso_gated_to_aon_ISO_ENABLE" (HIGH) */
+	assign mspa_pack::mspa3_iso_gated_to_aon_ISO_ENABLE = mspa35_mspa34_iso_enable;
+	/* End Logic for triggering: "mspa_pack::mspa3_iso_gated_to_aon_ISO_ENABLE" */
+endmodule /* Isolation Cell: mspa32_iso_strategy_iso_gated_to_aon */
+
+/*UPF model for Power Domain: "PD_AON"*/
+module mspa24_power_domain_PD_AON (
+
+);
+	import UPF::*;
+
+	/* Triggering Power Control Signal */
+	assign mspa_pack::mspa0_PD_AON_DOMAIN_PWR = get_supply_on_state( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VDD ) && get_supply_on_state( $root.qpa_top.upf_debug_top.top_power_demo_tb_qpaupfScope2.dut_qpaupfScope1.VSS ); ;
+endmodule /* Power Domain: PD_AON */
+/* UPF model for PA Scope: "dut_qpaupfScope1"*/
+module dut_qpaupfScope1 (
+	 VDD_SW,
+	 VSS,
+	 VDD
+);
+	import UPF::*;
+
+	input  supply_net_type VDD_SW = '{OFF,0};
+	input  supply_net_type VSS = '{OFF,0};
+	input  supply_net_type VDD = '{OFF,0};
+	/*Supply Nets*/
+	supply_net_type VSS_G;
+	supply_net_type VDD_GATED;
+	supply_net_type anonSN11_default_isolation_power = '{OFF,0};
+	supply_net_type anonSN10_default_isolation_ground = '{OFF,0};
+	supply_net_type anonSN9_default_retention_power = '{OFF,0};
+	supply_net_type anonSN8_default_retention_ground = '{OFF,0};
+	supply_net_type anonSN5_default_isolation_power = '{OFF,0};
+	supply_net_type anonSN4_default_isolation_ground = '{OFF,0};
+	supply_net_type anonSN3_default_retention_power = '{OFF,0};
+	supply_net_type anonSN2_default_retention_ground = '{OFF,0};
+	/* Declarations for Design Ctrl Ports */
+	reg mspa34_iso_enable;
+	initial
+	
+	$upf_init_signal_spy(
+	 "/top_power_demo_tb/dut/iso_enable" , "mspa34_iso_enable" ,0);
+	/* Creating assigns for Nets */
+	assign VSS_G = VSS;
+	assign VDD_GATED = VDD_SW;
+	/* Creating assigns for Nets */
+	/*Instantiation corresponding to Power Domain "PD_GATED"*/
+	mspa28_power_domain_PD_GATED PD_GATED (
+	);
+	/*Instantiation corresponding to Power Domain "PD_AON"*/
+	mspa24_power_domain_PD_AON PD_AON (
+	);
+endmodule /* PA Scope: dut_qpaupfScope1 */
+/* UPF model for PA Scope: "top_power_demo_tb_qpaupfScope2"*/
+module top_power_demo_tb_qpaupfScope2 (
+
+);
+	import UPF::*;
+
+	/*Supply Nets*/
+	/* Creating assigns for Nets */
+	/*Instantiation corresponding to PA Scope*/
+	dut_qpaupfScope1 dut_qpaupfScope1 (
+		.VDD_SW(  ),
+		.VSS(  ),
+		.VDD(  )	);
+endmodule /* PA Scope: top_power_demo_tb_qpaupfScope2 */
+
+// UPF Top's Model
+
+module upf_debug_top;
+	import UPF::*;
+		/*Instantiation corresponding to PA Scope*/
+	top_power_demo_tb_qpaupfScope2 top_power_demo_tb_qpaupfScope2 (
+	);
+
+endmodule /* upf_debug_top */

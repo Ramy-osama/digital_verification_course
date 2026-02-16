@@ -1,0 +1,333 @@
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <title>Questa Coverage Report</title>
+  <link rel="StyleSheet" media="screen" href="../css/hdl2html.css"/>
+</head>
+<body id="hdl2html">
+  <tt>
+<pre>
+<a name="1"><q-n>     1  </q-n></a><q-m>//=============================================================================</q-m>
+<a name="2"><q-n>     2  </q-n></a><q-m>// Testbench: alu_tb</q-m>
+<a name="3"><q-n>     3  </q-n></a><q-m>// Description: Coverage demonstration testbench for the 8-bit ALU</q-m>
+<a name="4"><q-n>     4  </q-n></a><q-m>//</q-m>
+<a name="5"><q-n>     5  </q-n></a><q-m>// Demonstrates:</q-m>
+<a name="6"><q-n>     6  </q-n></a><q-m>//   - Covergroups with sampling events</q-m>
+<a name="7"><q-n>     7  </q-n></a><q-m>//   - Coverpoints with explicit bins, auto-bins, and illegal_bins</q-m>
+<a name="8"><q-n>     8  </q-n></a><q-m>//   - Transition coverage (operation sequences)</q-m>
+<a name="9"><q-n>     9  </q-n></a><q-m>//   - Cross coverage (operation x operand ranges)</q-m>
+<a name="10"><q-n>     10  </q-n></a><q-m>//   - Constrained randomization</q-m>
+<a name="11"><q-n>     11  </q-n></a><q-m>//   - Coverage-driven stimulus (stop when coverage target met)</q-m>
+<a name="12"><q-n>     12  </q-n></a><q-m>//   - Self-checking with immediate assertions</q-m>
+<a name="13"><q-n>     13  </q-n></a><q-m>//=============================================================================</q-m>
+<a name="14"><q-n>     14  </q-n></a>
+<a name="15"><q-n>     15  </q-n></a><q-w>module</q-w> alu_tb;
+<a name="16"><q-n>     16  </q-n></a>
+<a name="17"><q-n>     17  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="18"><q-n>     18  </q-n></a>    <q-m>// Signals</q-m>
+<a name="19"><q-n>     19  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="20"><q-n>     20  </q-n></a>    <q-w>logic</q-w>        clk;
+<a name="21"><q-n>     21  </q-n></a>    <q-w>logic</q-w> [7:0]  a, b;
+<a name="22"><q-n>     22  </q-n></a>    <q-w>logic</q-w> [2:0]  op;
+<a name="23"><q-n>     23  </q-n></a>    <q-w>logic</q-w> [7:0]  result;
+<a name="24"><q-n>     24  </q-n></a>    <q-w>logic</q-w>        zero, carry;
+<a name="25"><q-n>     25  </q-n></a>
+<a name="26"><q-n>     26  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="27"><q-n>     27  </q-n></a>    <q-m>// DUT Instantiation</q-m>
+<a name="28"><q-n>     28  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="29"><q-n>     29  </q-n></a>    alu dut (
+<a name="30"><q-n>     30  </q-n></a>        .a      (a),
+<a name="31"><q-n>     31  </q-n></a>        .b      (b),
+<a name="32"><q-n>     32  </q-n></a>        .op     (op),
+<a name="33"><q-n>     33  </q-n></a>        .result (result),
+<a name="34"><q-n>     34  </q-n></a>        .zero   (zero),
+<a name="35"><q-n>     35  </q-n></a>        .carry  (carry)
+<a name="36"><q-n>     36  </q-n></a>    );
+<a name="37"><q-n>     37  </q-n></a>
+<a name="38"><q-n>     38  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="39"><q-n>     39  </q-n></a>    <q-m>// Clock Generation: 10ns period</q-m>
+<a name="40"><q-n>     40  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="41"><q-n>     41  </q-n></a>    <q-w>initial</q-w> clk = 0;
+<a name="42"><q-n>     42  </q-n></a>    <q-w>always</q-w> #5 clk = ~clk;
+<a name="43"><q-n>     43  </q-n></a>
+<a name="44"><q-n>     44  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="45"><q-n>     45  </q-n></a>    <q-m>// Coverage Definitions</q-m>
+<a name="46"><q-n>     46  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="47"><q-n>     47  </q-n></a>
+<a name="48"><q-n>     48  </q-n></a>    <q-m>// --- Covergroup: alu_cg ---</q-m>
+<a name="49"><q-n>     49  </q-n></a>    <q-m>// Sampled on the positive edge of clk</q-m>
+<a name="50"><q-n>     50  </q-n></a>    <q-w>covergroup</q-w> alu_cg @(<q-a>posedge</q-w> clk);
+<a name="51"><q-n>     51  </q-n></a>
+<a name="52"><q-n>     52  </q-n></a>        <q-m>// ---- Coverpoint: ALU Operation ----</q-m>
+<a name="53"><q-n>     53  </q-n></a>        <q-m>// Named bins for every valid operation</q-m>
+<a name="54"><q-n>     54  </q-n></a>        cp_op: <q-w>coverpoint</q-w> op {
+<a name="55"><q-n>     55  </q-n></a>            <q-w>bins</q-w> add_op = {3'b000};
+<a name="56"><q-n>     56  </q-n></a>            <q-w>bins</q-w> sub_op = {3'b001};
+<a name="57"><q-n>     57  </q-n></a>            <q-w>bins</q-w> and_op = {3'b010};
+<a name="58"><q-n>     58  </q-n></a>            <q-w>bins</q-w> or_op  = {3'b011};
+<a name="59"><q-n>     59  </q-n></a>            <q-w>bins</q-w> xor_op = {3'b100};
+<a name="60"><q-n>     60  </q-n></a>            <q-w>bins</q-w> not_op = {3'b101};
+<a name="61"><q-n>     61  </q-n></a>            <q-w>bins</q-w> sll_op = {3'b110};
+<a name="62"><q-n>     62  </q-n></a>            <q-w>bins</q-w> srl_op = {3'b111};
+<a name="63"><q-n>     63  </q-n></a>        }
+<a name="64"><q-n>     64  </q-n></a>
+<a name="65"><q-n>     65  </q-n></a>        <q-m>// ---- Coverpoint: Operand A (with interesting value bins) ----</q-m>
+<a name="66"><q-n>     66  </q-n></a>        cp_a: <q-w>coverpoint</q-w> a {
+<a name="67"><q-n>     67  </q-n></a>            <q-w>bins</q-w> zero       = {8'h00};
+<a name="68"><q-n>     68  </q-n></a>            <q-w>bins</q-w> one        = {8'h01};
+<a name="69"><q-n>     69  </q-n></a>            <q-w>bins</q-w> mid_val    = {[8'h3F:8'h41]};  <q-m>// around 0x40</q-m>
+<a name="70"><q-n>     70  </q-n></a>            <q-w>bins</q-w> high_val   = {[8'hF0:8'hFE]};
+<a name="71"><q-n>     71  </q-n></a>            <q-w>bins</q-w> all_ones   = {8'hFF};
+<a name="72"><q-n>     72  </q-n></a>            <q-w>bins</q-w> low_range  = {[8'h02:8'h3E]};
+<a name="73"><q-n>     73  </q-n></a>            <q-w>bins</q-w> high_range = {[8'h42:8'hEF]};
+<a name="74"><q-n>     74  </q-n></a>        }
+<a name="75"><q-n>     75  </q-n></a>
+<a name="76"><q-n>     76  </q-n></a>        <q-m>// ---- Coverpoint: Operand B (with interesting value bins) ----</q-m>
+<a name="77"><q-n>     77  </q-n></a>        cp_b: <q-w>coverpoint</q-w> b {
+<a name="78"><q-n>     78  </q-n></a>            <q-w>bins</q-w> zero       = {8'h00};
+<a name="79"><q-n>     79  </q-n></a>            <q-w>bins</q-w> one        = {8'h01};
+<a name="80"><q-n>     80  </q-n></a>            <q-w>bins</q-w> mid_val    = {[8'h3F:8'h41]};
+<a name="81"><q-n>     81  </q-n></a>            <q-w>bins</q-w> high_val   = {[8'hF0:8'hFE]};
+<a name="82"><q-n>     82  </q-n></a>            <q-w>bins</q-w> all_ones   = {8'hFF};
+<a name="83"><q-n>     83  </q-n></a>            <q-w>bins</q-w> low_range  = {[8'h02:8'h3E]};
+<a name="84"><q-n>     84  </q-n></a>            <q-w>bins</q-w> high_range = {[8'h42:8'hEF]};
+<a name="85"><q-n>     85  </q-n></a>        }
+<a name="86"><q-n>     86  </q-n></a>
+<a name="87"><q-n>     87  </q-n></a>        <q-m>// ---- Coverpoint: Result ranges ----</q-m>
+<a name="88"><q-n>     88  </q-n></a>        cp_result: <q-w>coverpoint</q-w> result {
+<a name="89"><q-n>     89  </q-n></a>            <q-w>bins</q-w> res_zero    = {8'h00};
+<a name="90"><q-n>     90  </q-n></a>            <q-w>bins</q-w> res_low     = {[8'h01:8'h7F]};
+<a name="91"><q-n>     91  </q-n></a>            <q-w>bins</q-w> res_high    = {[8'h80:8'hFE]};
+<a name="92"><q-n>     92  </q-n></a>            <q-w>bins</q-w> res_max     = {8'hFF};
+<a name="93"><q-n>     93  </q-n></a>        }
+<a name="94"><q-n>     94  </q-n></a>
+<a name="95"><q-n>     95  </q-n></a>        <q-m>// ---- Coverpoint: Zero flag ----</q-m>
+<a name="96"><q-n>     96  </q-n></a>        cp_zero_flag: <q-w>coverpoint</q-w> zero {
+<a name="97"><q-n>     97  </q-n></a>            <q-w>bins</q-w> flag_set   = {1'b1};
+<a name="98"><q-n>     98  </q-n></a>            <q-w>bins</q-w> flag_clear = {1'b0};
+<a name="99"><q-n>     99  </q-n></a>        }
+<a name="100"><q-n>     100  </q-n></a>
+<a name="101"><q-n>     101  </q-n></a>        <q-m>// ---- Coverpoint: Carry flag ----</q-m>
+<a name="102"><q-n>     102  </q-n></a>        cp_carry_flag: <q-w>coverpoint</q-w> carry {
+<a name="103"><q-n>     103  </q-n></a>            <q-w>bins</q-w> carry_set   = {1'b1};
+<a name="104"><q-n>     104  </q-n></a>            <q-w>bins</q-w> carry_clear = {1'b0};
+<a name="105"><q-n>     105  </q-n></a>        }
+<a name="106"><q-n>     106  </q-n></a>
+<a name="107"><q-n>     107  </q-n></a>        <q-m>// ---- Transition Coverage on Operations ----</q-m>
+<a name="108"><q-n>     108  </q-n></a>        <q-m>// Track interesting operation sequences</q-m>
+<a name="109"><q-n>     109  </q-n></a>        cp_op_trans: <q-w>coverpoint</q-w> op {
+<a name="110"><q-n>     110  </q-n></a>            <q-w>bins</q-w> add_to_sub    = (3'b000 =&gt; 3'b001);
+<a name="111"><q-n>     111  </q-n></a>            <q-w>bins</q-w> sub_to_add    = (3'b001 =&gt; 3'b000);
+<a name="112"><q-n>     112  </q-n></a>            <q-w>bins</q-w> arith_to_logic = (3'b000 =&gt; 3'b010),
+<a name="113"><q-n>     113  </q-n></a>                                  (3'b001 =&gt; 3'b010);
+<a name="114"><q-n>     114  </q-n></a>            <q-w>bins</q-w> logic_to_shift = (3'b010 =&gt; 3'b110),
+<a name="115"><q-n>     115  </q-n></a>                                  (3'b011 =&gt; 3'b110),
+<a name="116"><q-n>     116  </q-n></a>                                  (3'b100 =&gt; 3'b110);
+<a name="117"><q-n>     117  </q-n></a>            <q-w>bins</q-w> shift_to_arith = (3'b110 =&gt; 3'b000),
+<a name="118"><q-n>     118  </q-n></a>                                  (3'b111 =&gt; 3'b000);
+<a name="119"><q-n>     119  </q-n></a>            <q-w>bins</q-w> all_ops_seq    = (3'b000 =&gt; 3'b001 =&gt; 3'b010 =&gt; 3'b011 =&gt;
+<a name="120"><q-n>     120  </q-n></a>                                   3'b100 =&gt; 3'b101 =&gt; 3'b110 =&gt; 3'b111);
+<a name="121"><q-n>     121  </q-n></a>        }
+<a name="122"><q-n>     122  </q-n></a>
+<a name="123"><q-n>     123  </q-n></a>        <q-m>// ---- Cross Coverage: Operation x Operand A ----</q-m>
+<a name="124"><q-n>     124  </q-n></a>        <q-m>// Ensures every operation is tested with every interesting 'a' range</q-m>
+<a name="125"><q-n>     125  </q-n></a>        op_x_a: <q-w>cross</q-w> cp_op, cp_a;
+<a name="126"><q-n>     126  </q-n></a>
+<a name="127"><q-n>     127  </q-n></a>        <q-m>// ---- Cross Coverage: Operation x Operand B ----</q-m>
+<a name="128"><q-n>     128  </q-n></a>        op_x_b: <q-w>cross</q-w> cp_op, cp_b;
+<a name="129"><q-n>     129  </q-n></a>
+<a name="130"><q-n>     130  </q-n></a>        <q-m>// ---- Cross Coverage: Operation x Zero Flag ----</q-m>
+<a name="131"><q-n>     131  </q-n></a>        <q-m>// Ensures each operation produces both zero and non-zero results</q-m>
+<a name="132"><q-n>     132  </q-n></a>        op_x_zero: <q-w>cross</q-w> cp_op, cp_zero_flag;
+<a name="133"><q-n>     133  </q-n></a>
+<a name="134"><q-n>     134  </q-n></a>    <q-w>endgroup</q-w>
+<a name="135"><q-n>     135  </q-n></a>
+<a name="136"><q-n>     136  </q-n></a>    <q-m>// Instantiate covergroup</q-m>
+<a name="137"><q-n>     137  </q-n></a>    alu_cg cg = <q-w>new</q-w>();
+<a name="138"><q-n>     138  </q-n></a>
+<a name="139"><q-n>     139  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="140"><q-n>     140  </q-n></a>    <q-m>// Stimulus Task: Apply inputs and wait one clock</q-m>
+<a name="141"><q-n>     141  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="142"><q-n>     142  </q-n></a>    <q-w>task</q-w> <q-w>automatic</q-w> apply_stimulus(<q-w>input</q-w> <q-w>logic</q-w> [2:0] t_op,
+<a name="143"><q-n>     143  </q-n></a>                                  <q-w>input</q-w> <q-w>logic</q-w> [7:0] t_a,
+<a name="144"><q-n>     144  </q-n></a>                                  <q-w>input</q-w> <q-w>logic</q-w> [7:0] t_b);
+<a name="145"><q-n>     145  </q-n></a>        @(<q-a>negedge</q-w> clk);  <q-m>// Setup inputs on falling edge</q-m>
+<a name="146"><q-n>     146  </q-n></a>        op = t_op;
+<a name="147"><q-n>     147  </q-n></a>        a  = t_a;
+<a name="148"><q-n>     148  </q-n></a>        b  = t_b;
+<a name="149"><q-n>     149  </q-n></a>        @(<q-a>posedge</q-w> clk);  <q-m>// Covergroup samples here</q-m>
+<a name="150"><q-n>     150  </q-n></a>        #1;              <q-m>// Small delay for output to settle</q-m>
+<a name="151"><q-n>     151  </q-n></a>    <q-w>endtask</q-w>
+<a name="152"><q-n>     152  </q-n></a>
+<a name="153"><q-n>     153  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="154"><q-n>     154  </q-n></a>    <q-m>// Self-Checking: Verify ADD and SUB results</q-m>
+<a name="155"><q-n>     155  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="156"><q-n>     156  </q-n></a>    <q-w>task</q-w> <q-w>automatic</q-w> check_add(<q-w>input</q-w> <q-w>logic</q-w> [7:0] t_a, <q-w>input</q-w> <q-w>logic</q-w> [7:0] t_b);
+<a name="157"><q-n>     157  </q-n></a>        <q-w>logic</q-w> [8:0] expected;
+<a name="158"><q-n>     158  </q-n></a>        expected = {1'b0, t_a} + {1'b0, t_b};
+<a name="159"><q-n>     159  </q-n></a>        <q-w>assert</q-w> (result == expected[7:0])
+<a name="160"><q-n>     160  </q-n></a>            <q-w>else</q-w> $<q-v>error</q-w>(<q-l>"ADD FAIL: %0h + %0h = %0h, expected %0h"</q-l>,
+<a name="161"><q-n>     161  </q-n></a>                        t_a, t_b, result, expected[7:0]);
+<a name="162"><q-n>     162  </q-n></a>        <q-w>assert</q-w> (carry == expected[8])
+<a name="163"><q-n>     163  </q-n></a>            <q-w>else</q-w> $<q-v>error</q-w>(<q-l>"ADD CARRY FAIL: %0h + %0h carry=%0b, expected %0b"</q-l>,
+<a name="164"><q-n>     164  </q-n></a>                        t_a, t_b, carry, expected[8]);
+<a name="165"><q-n>     165  </q-n></a>    <q-w>endtask</q-w>
+<a name="166"><q-n>     166  </q-n></a>
+<a name="167"><q-n>     167  </q-n></a>    <q-w>task</q-w> <q-w>automatic</q-w> check_sub(<q-w>input</q-w> <q-w>logic</q-w> [7:0] t_a, <q-w>input</q-w> <q-w>logic</q-w> [7:0] t_b);
+<a name="168"><q-n>     168  </q-n></a>        <q-w>logic</q-w> [8:0] expected;
+<a name="169"><q-n>     169  </q-n></a>        expected = {1'b0, t_a} - {1'b0, t_b};
+<a name="170"><q-n>     170  </q-n></a>        <q-w>assert</q-w> (result == expected[7:0])
+<a name="171"><q-n>     171  </q-n></a>            <q-w>else</q-w> $<q-v>error</q-w>(<q-l>"SUB FAIL: %0h - %0h = %0h, expected %0h"</q-l>,
+<a name="172"><q-n>     172  </q-n></a>                        t_a, t_b, result, expected[7:0]);
+<a name="173"><q-n>     173  </q-n></a>    <q-w>endtask</q-w>
+<a name="174"><q-n>     174  </q-n></a>
+<a name="175"><q-n>     175  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="176"><q-n>     176  </q-n></a>    <q-m>// Main Test Stimulus</q-m>
+<a name="177"><q-n>     177  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="178"><q-n>     178  </q-n></a>    <q-w>initial</q-w> <q-w>begin</q-w>
+<a name="179"><q-n>     179  </q-n></a>        <q-m>// Initialize signals</q-m>
+<a name="180"><q-n>     180  </q-n></a>        op = 3'b000;
+<a name="181"><q-n>     181  </q-n></a>        a  = 8'h00;
+<a name="182"><q-n>     182  </q-n></a>        b  = 8'h00;
+<a name="183"><q-n>     183  </q-n></a>
+<a name="184"><q-n>     184  </q-n></a>        $display(<q-l>"============================================"</q-l>);
+<a name="185"><q-n>     185  </q-n></a>        $display(<q-l>" ALU Coverage Demonstration - Starting Test"</q-l>);
+<a name="186"><q-n>     186  </q-n></a>        $display(<q-l>"============================================"</q-l>);
+<a name="187"><q-n>     187  </q-n></a>
+<a name="188"><q-n>     188  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="189"><q-n>     189  </q-n></a>        <q-m>// PHASE 1: Directed Tests (Corner Cases)</q-m>
+<a name="190"><q-n>     190  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="191"><q-n>     191  </q-n></a>        $display(<q-l>"\n--- Phase 1: Directed Corner-Case Tests ---"</q-l>);
+<a name="192"><q-n>     192  </q-n></a>
+<a name="193"><q-n>     193  </q-n></a>        <q-m>// ADD corner cases</q-m>
+<a name="194"><q-n>     194  </q-n></a>        apply_stimulus(3'b000, 8'h00, 8'h00); check_add(8'h00, 8'h00);  <q-m>// 0+0</q-m>
+<a name="195"><q-n>     195  </q-n></a>        apply_stimulus(3'b000, 8'hFF, 8'h01); check_add(8'hFF, 8'h01);  <q-m>// overflow</q-m>
+<a name="196"><q-n>     196  </q-n></a>        apply_stimulus(3'b000, 8'hFF, 8'hFF); check_add(8'hFF, 8'hFF);  <q-m>// max+max</q-m>
+<a name="197"><q-n>     197  </q-n></a>        apply_stimulus(3'b000, 8'h80, 8'h80); check_add(8'h80, 8'h80);  <q-m>// 128+128</q-m>
+<a name="198"><q-n>     198  </q-n></a>        apply_stimulus(3'b000, 8'h01, 8'h01); check_add(8'h01, 8'h01);  <q-m>// 1+1</q-m>
+<a name="199"><q-n>     199  </q-n></a>
+<a name="200"><q-n>     200  </q-n></a>        <q-m>// SUB corner cases</q-m>
+<a name="201"><q-n>     201  </q-n></a>        apply_stimulus(3'b001, 8'h00, 8'h00); check_sub(8'h00, 8'h00);  <q-m>// 0-0</q-m>
+<a name="202"><q-n>     202  </q-n></a>        apply_stimulus(3'b001, 8'hFF, 8'h01); check_sub(8'hFF, 8'h01);  <q-m>// FF-1</q-m>
+<a name="203"><q-n>     203  </q-n></a>        apply_stimulus(3'b001, 8'h00, 8'h01); check_sub(8'h00, 8'h01);  <q-m>// underflow</q-m>
+<a name="204"><q-n>     204  </q-n></a>        apply_stimulus(3'b001, 8'h40, 8'h40); check_sub(8'h40, 8'h40);  <q-m>// equal</q-m>
+<a name="205"><q-n>     205  </q-n></a>
+<a name="206"><q-n>     206  </q-n></a>        <q-m>// AND/OR/XOR with corner values</q-m>
+<a name="207"><q-n>     207  </q-n></a>        apply_stimulus(3'b010, 8'hFF, 8'h00);  <q-m>// AND: FF &amp; 00 = 00</q-m>
+<a name="208"><q-n>     208  </q-n></a>        apply_stimulus(3'b010, 8'hFF, 8'hFF);  <q-m>// AND: FF &amp; FF = FF</q-m>
+<a name="209"><q-n>     209  </q-n></a>        apply_stimulus(3'b011, 8'h00, 8'h00);  <q-m>// OR:  00 | 00 = 00</q-m>
+<a name="210"><q-n>     210  </q-n></a>        apply_stimulus(3'b011, 8'hAA, 8'h55);  <q-m>// OR:  AA | 55 = FF</q-m>
+<a name="211"><q-n>     211  </q-n></a>        apply_stimulus(3'b100, 8'hFF, 8'hFF);  <q-m>// XOR: FF ^ FF = 00</q-m>
+<a name="212"><q-n>     212  </q-n></a>        apply_stimulus(3'b100, 8'hAA, 8'h55);  <q-m>// XOR: AA ^ 55 = FF</q-m>
+<a name="213"><q-n>     213  </q-n></a>
+<a name="214"><q-n>     214  </q-n></a>        <q-m>// NOT corner values</q-m>
+<a name="215"><q-n>     215  </q-n></a>        apply_stimulus(3'b101, 8'h00, 8'h00);  <q-m>// NOT 00 = FF</q-m>
+<a name="216"><q-n>     216  </q-n></a>        apply_stimulus(3'b101, 8'hFF, 8'h00);  <q-m>// NOT FF = 00</q-m>
+<a name="217"><q-n>     217  </q-n></a>
+<a name="218"><q-n>     218  </q-n></a>        <q-m>// Shift corner values</q-m>
+<a name="219"><q-n>     219  </q-n></a>        apply_stimulus(3'b110, 8'h80, 8'h00);  <q-m>// SLL: 80 &lt;&lt; 1 (carry out)</q-m>
+<a name="220"><q-n>     220  </q-n></a>        apply_stimulus(3'b110, 8'h01, 8'h00);  <q-m>// SLL: 01 &lt;&lt; 1</q-m>
+<a name="221"><q-n>     221  </q-n></a>        apply_stimulus(3'b111, 8'h01, 8'h00);  <q-m>// SRL: 01 &gt;&gt; 1 (goes to 0)</q-m>
+<a name="222"><q-n>     222  </q-n></a>        apply_stimulus(3'b111, 8'h80, 8'h00);  <q-m>// SRL: 80 &gt;&gt; 1</q-m>
+<a name="223"><q-n>     223  </q-n></a>
+<a name="224"><q-n>     224  </q-n></a>        <q-m>// Trigger the sequential transition: 000-&gt;001-&gt;010-&gt;011-&gt;100-&gt;101-&gt;110-&gt;111</q-m>
+<a name="225"><q-n>     225  </q-n></a>        apply_stimulus(3'b000, 8'h12, 8'h34);
+<a name="226"><q-n>     226  </q-n></a>        apply_stimulus(3'b001, 8'h56, 8'h78);
+<a name="227"><q-n>     227  </q-n></a>        apply_stimulus(3'b010, 8'h9A, 8'hBC);
+<a name="228"><q-n>     228  </q-n></a>        apply_stimulus(3'b011, 8'hDE, 8'hF0);
+<a name="229"><q-n>     229  </q-n></a>        apply_stimulus(3'b100, 8'h11, 8'h22);
+<a name="230"><q-n>     230  </q-n></a>        apply_stimulus(3'b101, 8'h33, 8'h44);
+<a name="231"><q-n>     231  </q-n></a>        apply_stimulus(3'b110, 8'h55, 8'h66);
+<a name="232"><q-n>     232  </q-n></a>        apply_stimulus(3'b111, 8'h77, 8'h88);
+<a name="233"><q-n>     233  </q-n></a>
+<a name="234"><q-n>     234  </q-n></a>        $display(<q-l>"Phase 1 Coverage: %.2f%%"</q-l>, cg.get_coverage());
+<a name="235"><q-n>     235  </q-n></a>
+<a name="236"><q-n>     236  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="237"><q-n>     237  </q-n></a>        <q-m>// PHASE 2: Constrained-Random Stimulus</q-m>
+<a name="238"><q-n>     238  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="239"><q-n>     239  </q-n></a>        $display(<q-l>"\n--- Phase 2: Constrained-Random Stimulus (500 iterations) ---"</q-l>);
+<a name="240"><q-n>     240  </q-n></a>
+<a name="241"><q-n>     241  </q-n></a>        <q-w>repeat</q-w> (500) <q-w>begin</q-w>
+<a name="242"><q-n>     242  </q-n></a>            <q-w>logic</q-w> [2:0] rand_op;
+<a name="243"><q-n>     243  </q-n></a>            <q-w>logic</q-w> [7:0] rand_a, rand_b;
+<a name="244"><q-n>     244  </q-n></a>
+<a name="245"><q-n>     245  </q-n></a>            <q-m>// Randomize</q-m>
+<a name="246"><q-n>     246  </q-n></a>            <q-w>assert</q-w>(std::randomize(rand_op));
+<a name="247"><q-n>     247  </q-n></a>            <q-w>assert</q-w>(std::randomize(rand_a));
+<a name="248"><q-n>     248  </q-n></a>            <q-w>assert</q-w>(std::randomize(rand_b));
+<a name="249"><q-n>     249  </q-n></a>
+<a name="250"><q-n>     250  </q-n></a>            apply_stimulus(rand_op, rand_a, rand_b);
+<a name="251"><q-n>     251  </q-n></a>
+<a name="252"><q-n>     252  </q-n></a>            <q-m>// Self-check for arithmetic operations</q-m>
+<a name="253"><q-n>     253  </q-n></a>            <q-w>if</q-w> (rand_op == 3'b000) check_add(rand_a, rand_b);
+<a name="254"><q-n>     254  </q-n></a>            <q-w>if</q-w> (rand_op == 3'b001) check_sub(rand_a, rand_b);
+<a name="255"><q-n>     255  </q-n></a>        <q-w>end</q-w>
+<a name="256"><q-n>     256  </q-n></a>
+<a name="257"><q-n>     257  </q-n></a>        $display(<q-l>"Phase 2 Coverage: %.2f%%"</q-l>, cg.get_coverage());
+<a name="258"><q-n>     258  </q-n></a>
+<a name="259"><q-n>     259  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="260"><q-n>     260  </q-n></a>        <q-m>// PHASE 3: Coverage-Driven Closing Loop</q-m>
+<a name="261"><q-n>     261  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="262"><q-n>     262  </q-n></a>        $display(<q-l>"\n--- Phase 3: Coverage-Driven Closing Loop (target: 98%%) ---"</q-l>);
+<a name="263"><q-n>     263  </q-n></a>
+<a name="264"><q-n>     264  </q-n></a>        <q-w>begin</q-w>
+<a name="265"><q-n>     265  </q-n></a>            <q-w>automatic</q-w> <q-w>int</q-w> iter_count = 0;
+<a name="266"><q-n>     266  </q-n></a>            <q-w>while</q-w> (cg.get_coverage() &lt; 98.0 &amp;&amp; iter_count &lt; 2000) <q-w>begin</q-w>
+<a name="267"><q-n>     267  </q-n></a>                <q-w>logic</q-w> [2:0] rand_op;
+<a name="268"><q-n>     268  </q-n></a>                <q-w>logic</q-w> [7:0] rand_a, rand_b;
+<a name="269"><q-n>     269  </q-n></a>
+<a name="270"><q-n>     270  </q-n></a>                <q-w>assert</q-w>(std::randomize(rand_op));
+<a name="271"><q-n>     271  </q-n></a>                <q-w>assert</q-w>(std::randomize(rand_a));
+<a name="272"><q-n>     272  </q-n></a>                <q-w>assert</q-w>(std::randomize(rand_b));
+<a name="273"><q-n>     273  </q-n></a>
+<a name="274"><q-n>     274  </q-n></a>                apply_stimulus(rand_op, rand_a, rand_b);
+<a name="275"><q-n>     275  </q-n></a>                iter_count++;
+<a name="276"><q-n>     276  </q-n></a>
+<a name="277"><q-n>     277  </q-n></a>                <q-m>// Print progress every 200 iterations</q-m>
+<a name="278"><q-n>     278  </q-n></a>                <q-w>if</q-w> (iter_count % 200 == 0)
+<a name="279"><q-n>     279  </q-n></a>                    $display(<q-l>"  Iteration %0d, Coverage: %.2f%%"</q-l>,
+<a name="280"><q-n>     280  </q-n></a>                             iter_count, cg.get_coverage());
+<a name="281"><q-n>     281  </q-n></a>            <q-w>end</q-w>
+<a name="282"><q-n>     282  </q-n></a>            $display(<q-l>"  Closing loop finished after %0d iterations"</q-l>, iter_count);
+<a name="283"><q-n>     283  </q-n></a>        <q-w>end</q-w>
+<a name="284"><q-n>     284  </q-n></a>
+<a name="285"><q-n>     285  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="286"><q-n>     286  </q-n></a>        <q-m>// Final Coverage Report</q-m>
+<a name="287"><q-n>     287  </q-n></a>        <q-m>//---------------------------------------------------------------------</q-m>
+<a name="288"><q-n>     288  </q-n></a>        $display(<q-l>"\n============================================"</q-l>);
+<a name="289"><q-n>     289  </q-n></a>        $display(<q-l>" FINAL COVERAGE RESULTS"</q-l>);
+<a name="290"><q-n>     290  </q-n></a>        $display(<q-l>"============================================"</q-l>);
+<a name="291"><q-n>     291  </q-n></a>        $display(<q-l>"  Overall Coverage:    %.2f%%"</q-l>, cg.get_coverage());
+<a name="292"><q-n>     292  </q-n></a>        $display(<q-l>"  cp_op Coverage:      %.2f%%"</q-l>, cg.cp_op.get_coverage());
+<a name="293"><q-n>     293  </q-n></a>        $display(<q-l>"  cp_a Coverage:       %.2f%%"</q-l>, cg.cp_a.get_coverage());
+<a name="294"><q-n>     294  </q-n></a>        $display(<q-l>"  cp_b Coverage:       %.2f%%"</q-l>, cg.cp_b.get_coverage());
+<a name="295"><q-n>     295  </q-n></a>        $display(<q-l>"  cp_result Coverage:  %.2f%%"</q-l>, cg.cp_result.get_coverage());
+<a name="296"><q-n>     296  </q-n></a>        $display(<q-l>"  cp_zero_flag:        %.2f%%"</q-l>, cg.cp_zero_flag.get_coverage());
+<a name="297"><q-n>     297  </q-n></a>        $display(<q-l>"  cp_carry_flag:       %.2f%%"</q-l>, cg.cp_carry_flag.get_coverage());
+<a name="298"><q-n>     298  </q-n></a>        $display(<q-l>"  cp_op_trans:         %.2f%%"</q-l>, cg.cp_op_trans.get_coverage());
+<a name="299"><q-n>     299  </q-n></a>        $display(<q-l>"  op_x_a Cross:        %.2f%%"</q-l>, cg.op_x_a.get_coverage());
+<a name="300"><q-n>     300  </q-n></a>        $display(<q-l>"  op_x_b Cross:        %.2f%%"</q-l>, cg.op_x_b.get_coverage());
+<a name="301"><q-n>     301  </q-n></a>        $display(<q-l>"  op_x_zero Cross:     %.2f%%"</q-l>, cg.op_x_zero.get_coverage());
+<a name="302"><q-n>     302  </q-n></a>        $display(<q-l>"============================================\n"</q-l>);
+<a name="303"><q-n>     303  </q-n></a>
+<a name="304"><q-n>     304  </q-n></a>        #100;
+<a name="305"><q-n>     305  </q-n></a>        $finish;
+<a name="306"><q-n>     306  </q-n></a>    <q-w>end</q-w>
+<a name="307"><q-n>     307  </q-n></a>
+<a name="308"><q-n>     308  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="309"><q-n>     309  </q-n></a>    <q-m>// Timeout Watchdog</q-m>
+<a name="310"><q-n>     310  </q-n></a>    <q-m>//=========================================================================</q-m>
+<a name="311"><q-n>     311  </q-n></a>    <q-w>initial</q-w> <q-w>begin</q-w>
+<a name="312"><q-n>     312  </q-n></a>        #1_000_000;
+<a name="313"><q-n>     313  </q-n></a>        $display(<q-l>"ERROR: Simulation timeout!"</q-l>);
+<a name="314"><q-n>     314  </q-n></a>        $finish;
+<a name="315"><q-n>     315  </q-n></a>    <q-w>end</q-w>
+<a name="316"><q-n>     316  </q-n></a>
+<a name="317"><q-n>     317  </q-n></a><q-w>endmodule</q-w>
+</tt>
+</pre>
+
+  
+</body>
+</html>

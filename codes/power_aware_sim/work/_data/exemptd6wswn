@@ -1,0 +1,89 @@
+/* This package contains the definitions of the functions used in Power Aware Netlist file */
+`line 3 "mspa_pack.sv" 1
+package mspa_pack;
+
+import UPF::*;
+
+reg pa_reg_const_0 = 1'b0;
+reg pa_reg_const_1 = 1'b1;
+	/******************************************************* 
+	** Declarations corresponding to Power Control Signals **
+	** triggered by UPF hierarchy.                         **
+	 *******************************************************/
+	reg paopt_t0cond;
+	reg mspa3_iso_gated_to_aon_ISO_ENABLE;
+	reg mspa2_iso_gated_to_aon_ISO_PWR;
+	reg mspa1_PD_GATED_DOMAIN_PWR;
+	reg mspa0_PD_AON_DOMAIN_PWR;
+	/****************** End PCS Declarations ***************/
+	reg mspa0_PD_AON_DOMAIN_PWR_2 = 1'b1;
+	reg mspa2_iso_gated_to_aon_ISO_PWR_4 = 1'b1;
+	reg mspa1_PD_GATED_DOMAIN_PWR_3 = 1'b1;
+		wire mspa1_PD_GATED_DOMAIN_PWR_3_wire;
+		wire mspa2_iso_gated_to_aon_ISO_PWR_4_wire;
+		wire mspa0_PD_AON_DOMAIN_PWR_2_wire;
+
+	/******************************************************* 
+	** Mapping functions corresponding to VCTs            **
+	 *******************************************************/
+
+/********Types corresponding to Power power states**************/
+typedef struct packed { reg Active;power_state_simstate state_simstate;} ss_ps_type;
+typedef struct packed { reg Active;} pd_ps_type;
+/******************    End power state type dumping        ***************/
+	// MSPA Function to convert int to simstate 
+	function power_state_simstate mspa_int_to_simstate( int x );  
+	import UPF::*;
+	power_state_simstate simState;
+	if( x === 0 )
+		simState = NORMAL;
+	else if( x === 1 )
+		simState = CORRUPT;
+	else if( x === 2 )
+		simState = CORRUPT_ON_ACTIVITY;
+	else if( x === 3 )
+		simState = CORRUPT_STATE_ON_CHANGE;
+	else if( x === 4 )
+		simState = CORRUPT_STATE_ON_ACTIVITY;
+	return simState;
+	endfunction: mspa_int_to_simstate  
+/*Function for msg str for iepcoa/idpcoa*/
+import UPF::*;
+function string msg_str_func(power_state_simstate simState,int isIepCoa);
+if(simState == CORRUPT)
+	msg_str_func = isIepCoa ? "power is switched OFF" : "power shut OFF";
+else if(simState == CORRUPT_ON_ACTIVITY)
+	msg_str_func = isIepCoa ? "driving supply is in CORRUPT_ON_ACTIVITY simstate": "driving supply CORRUPT_ON_ACTIVITY simstate";
+else if(simState == CORRUPT_STATE_ON_ACTIVITY)
+	msg_str_func = isIepCoa ? "driving supply is in CORRUPT_STATE_ON_ACTIVITY simstate": "driving supply CORRUPT_STATE_ON_ACTIVITY simstate";
+else if(simState == CORRUPT_STATE_ON_CHANGE)
+	msg_str_func = isIepCoa ? "driving supply is in CORRUPT_STATE_ON_CHANGE simstate": "driving supply CORRUPT_STATE_ON_CHANGE simstate";
+endfunction
+
+function int msg_str_func_int(power_state_simstate simState,int isIepCoa);
+if(simState == CORRUPT)
+	msg_str_func_int = isIepCoa ? 1 : 2;
+else if(simState == CORRUPT_ON_ACTIVITY)
+	msg_str_func_int = isIepCoa ? 3 : 4;
+else if(simState == CORRUPT_STATE_ON_ACTIVITY)
+	msg_str_func_int = isIepCoa ? 5 : 6;
+else if(simState == CORRUPT_STATE_ON_CHANGE)
+	msg_str_func_int = isIepCoa ? 7 : 8;
+endfunction
+
+typedef struct{
+	string sStrtgyName;
+	string sPdName;
+	string sFileName;
+	int iLine;
+} pd_handle;
+pd_handle pdInfoTable[integer];
+string sSignalNames[integer];
+string sPaPrefix;
+string sPaOptionString = "PA_OPT_DESIGN_NAME = T:/work/opt_tb__pa_opt PAHIERPATHCNT 4 ";
+	bit [6:0]PA_CS;//Signal used for power up
+	bit [6:0]PA_SIG;//Signal used for power up
+	bit [6:0]PA_RCS;//Signal used for ret power up
+	bit [6:0]PA_RSIG;//Signal used for power up
+
+endpackage

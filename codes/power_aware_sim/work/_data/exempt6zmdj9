@@ -1,0 +1,798 @@
+----std_ulogic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_u_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in std_ulogic_vector(msb downto 0);
+	   isolation_output: out std_ulogic_vector(msb downto 0);	  
+	   clamp_value: in std_ulogic_vector(msb downto 0);
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_u_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_u_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => 'X');
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => 'X');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_u_latch_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in std_ulogic_vector(msb downto 0);
+	   isolation_output: out std_ulogic_vector(msb downto 0);	  
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_u_latch_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_u_latch_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => 'X');
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => 'X');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_u_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in std_ulogic;
+	     isolation_output: out std_ulogic;
+	     clamp_value :in std_ulogic;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_u_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_u_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_u_latch_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in std_ulogic;
+	     isolation_output: out std_ulogic;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_u_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_u_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+----x01 types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_x01z_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in x01z;
+	     isolation_output: out x01z;
+	     clamp_value :in std_ulogic;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_x01z_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_x01z_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_x01z_latch_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in x01z;
+	     isolation_output: out x01z;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_x01z_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_x01z_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+----std_logic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in std_logic_vector(msb downto 0);
+	   isolation_output: out std_logic_vector(msb downto 0);	  
+	   clamp_value: in std_ulogic_vector(msb downto 0);
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => 'X');
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => 'X');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_latch_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in std_logic_vector(msb downto 0);
+	   isolation_output: out std_logic_vector(msb downto 0);	  
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_latch_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_latch_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => 'X');
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => 'X');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in std_logic;
+	     isolation_output: out std_logic;
+	     clamp_value :in std_ulogic;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_latch_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in std_logic;
+	     isolation_output: out std_logic;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= 'X';
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= 'X';
+		end if;	
+	end process;
+
+end architecture;
+
+--ENUM TYPES MODEL---------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_enum_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in Integer;
+	     isolation_output: out Integer;
+ 	 	 clamp_value :in Integer;
+         corrupt_value :in Integer;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_enum_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_enum_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= corrupt_value;
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= corrupt_value;
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_enum_latch_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in Integer;
+	     isolation_output: out Integer;
+         corrupt_value :in Integer;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_enum_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_enum_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= corrupt_value;
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= corrupt_value;
+		end if;	
+	end process;
+
+end architecture;
+
+----BIT TYPE MODEL---------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_bit_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in bit_vector(msb downto 0);
+	   isolation_output: out bit_vector(msb downto 0);
+	   clamp_value: in bit_vector(msb downto 0);
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_bit_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_bit_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => '0');
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => '0');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_bit_latch_vec_vh_encrypt is
+  generic(
+		msb : integer := 0;
+		chkid : integer := 0);
+  port(isolation_input: in bit_vector(msb downto 0);
+	   isolation_output: out bit_vector(msb downto 0);	  
+	   power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_bit_latch_vec_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_bit_latch_vec_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= (others => '0');
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= (others => '0');
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_bit_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in bit;
+	     isolation_output: out bit;
+ 	     clamp_value     : in bit;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_bit_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_bit_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= '0';
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= '0';
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_bit_latch_vh_encrypt is
+  generic(
+		chkid : integer := 0);
+  port(isolation_input: in bit;
+	     isolation_output: out bit;
+	     power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_bit_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_bit_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= '0';
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= '0';
+		end if;	
+	end process;
+
+end architecture;
+
+
+----Integer types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_int_vh_encrypt is
+  generic(
+		msb : integer := 0;
+ 	 	  lsb : integer := 0;
+		  chkid : integer := 0);
+  port(isolation_input: in integer range msb downto lsb;
+			 isolation_output: out integer range msb downto lsb;	  
+			 clamp_value :in integer;
+			 corrupt_value :in integer;
+			 power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_int_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_int_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= corrupt_value;
+			elsif(isolation_signal = '1') then
+			    isolation_output <= clamp_value;
+			else 	
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= corrupt_value;
+		end if;	
+	end process;
+
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_iso_chk_cell_int_latch_vh_encrypt is
+  generic(
+		msb : integer := 0;
+ 	 	  lsb : integer := 0;
+		  chkid : integer := 0);
+  port(isolation_input: in integer range msb downto lsb;
+			 isolation_output: out integer range msb downto lsb;	  
+			 corrupt_value :in integer;
+			 power,isolation_signal,sink_pwr :in std_logic;
+			 portid,pdid : in integer);
+end mspa_iso_chk_cell_int_latch_vh_encrypt;
+
+architecture rtl of mspa_iso_chk_cell_int_latch_vh_encrypt is
+begin
+ 	pcs:process(power,isolation_signal,isolation_input)	begin
+	  	if(power = '1') then
+		    if(isolation_signal = 'X') then
+			    isolation_output <= corrupt_value;
+			elsif(isolation_signal /= '1') then
+			    isolation_output <= isolation_input;
+			end if;	
+		else 	
+		    isolation_output <= corrupt_value;
+		end if;	
+	end process;
+
+end architecture;
+
+--- LS -----
+----std_ulogic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_u_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(ls_input: in std_ulogic_vector(msb downto 0);
+	   ls_output: out std_ulogic_vector(msb downto 0);	  
+	   internal_supply :in std_logic);
+end mspa_ls_cell_u_vec_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_u_vec_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else (others => 'X');
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_u_vh_encrypt is
+  port(ls_input: in std_ulogic;
+	     ls_output: out std_ulogic;
+	     internal_supply :in std_logic);
+end mspa_ls_cell_u_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_u_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else 'X';
+end architecture;
+
+----x01 types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_x01z_vh_encrypt is
+  port(ls_input: in x01z;
+	     ls_output: out x01z;
+	     internal_supply :in std_logic);
+end mspa_ls_cell_x01z_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_x01z_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else 'X';
+end architecture;
+
+----std_logic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(ls_input: in std_logic_vector(msb downto 0);
+	   ls_output: out std_logic_vector(msb downto 0);	  
+	   internal_supply :in std_logic);
+end mspa_ls_cell_vec_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_vec_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else (others => 'X');
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_vh_encrypt is
+  port(ls_input: in std_logic;
+	     ls_output: out std_logic;
+	     internal_supply :in std_logic);
+end mspa_ls_cell_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else 'X';
+end architecture;
+
+--ENUM TYPES MODEL---------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_enum_vh_encrypt is
+  port(ls_input: in Integer;
+	     ls_output: out Integer;
+         corrupt_value :in Integer;
+	     internal_supply :in std_logic);
+end mspa_ls_cell_enum_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_enum_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else corrupt_value;
+end architecture;
+
+----BIT TYPE MODEL---------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_bit_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(ls_input: in bit_vector(msb downto 0);
+	   ls_output: out bit_vector(msb downto 0);
+	   internal_supply :in std_logic);
+end mspa_ls_cell_bit_vec_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_bit_vec_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else (others => '0');
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_bit_vh_encrypt is
+  port(ls_input: in bit;
+	     ls_output: out bit;
+	     internal_supply :in std_logic);
+end mspa_ls_cell_bit_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_bit_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else '0';
+end architecture;
+
+----Integer types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_ls_cell_int_vh_encrypt is
+  generic(msb : integer := 0;
+ 	 	  lsb : integer := 0);
+  port(ls_input: in integer range msb downto lsb;
+			 ls_output: out integer range msb downto lsb;	  
+			 corrupt_value :in integer;
+			 internal_supply :in std_logic);
+end mspa_ls_cell_int_vh_encrypt;
+
+architecture rtl of mspa_ls_cell_int_vh_encrypt is
+begin
+	pcs: ls_output <= ls_input when internal_supply = '1' else corrupt_value;
+end architecture;
+
+---- RS Buffers --------------------
+----std_ulogic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_u_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(buf_input: in std_ulogic_vector(msb downto 0);
+	   buf_output: out std_ulogic_vector(msb downto 0);
+	   power:in std_logic);
+end mspa_rs_buf_u_vec_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_u_vec_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else (others => 'X');
+end architecture;
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_u_vh_encrypt is
+  port(buf_input: in std_ulogic;
+	     buf_output: out std_ulogic;
+	     power:in std_logic);
+end mspa_rs_buf_u_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_u_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else 'X';
+end architecture;
+
+----x01 types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_x01z_vh_encrypt is
+  port(buf_input: in x01z;
+	     buf_output: out x01z;
+	     power:in std_logic);
+end mspa_rs_buf_x01z_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_x01z_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else 'X';
+end architecture;
+
+----std_logic types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(buf_input: in std_logic_vector(msb downto 0);
+	   buf_output: out std_logic_vector(msb downto 0);
+	   power:in std_logic);
+end mspa_rs_buf_vec_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_vec_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else (others => 'X');
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_vh_encrypt is
+  port(buf_input: in std_logic;
+	     buf_output: out std_logic;
+	     power:in std_logic);
+end mspa_rs_buf_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else 'X';
+end architecture;
+
+--ENUM TYPES MODEL---------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_enum_vh_encrypt is
+  port(buf_input: in Integer;
+	     buf_output: out Integer;
+       corrupt_value :in Integer;
+	     power:in std_logic);
+end mspa_rs_buf_enum_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_enum_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else corrupt_value;
+end architecture;
+
+----BIT TYPE MODEL---------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_bit_vec_vh_encrypt is
+  generic(msb : integer := 0);
+  port(buf_input: in bit_vector(msb downto 0);
+	   buf_output: out bit_vector(msb downto 0);
+	   power:in std_logic);
+end mspa_rs_buf_bit_vec_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_bit_vec_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else (others => '0');
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_bit_vh_encrypt is
+  port(buf_input: in bit;
+	     buf_output: out bit;
+	     power:in std_logic);
+end mspa_rs_buf_bit_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_bit_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else '0';
+end architecture;
+
+
+----Integer types--------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+entity mspa_rs_buf_int_vh_encrypt is
+  generic(msb : integer := 0;
+ 	 	  lsb : integer := 0);
+  port(buf_input: in integer range msb downto lsb;
+			 buf_output: out integer range msb downto lsb;
+			 corrupt_value :in integer;
+			 power:in std_logic);
+end mspa_rs_buf_int_vh_encrypt;
+
+architecture rtl of mspa_rs_buf_int_vh_encrypt is
+begin
+			  pcs: buf_output <= buf_input when power = '1' else corrupt_value;
+end architecture;
+

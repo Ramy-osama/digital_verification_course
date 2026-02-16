@@ -1,0 +1,32 @@
+@ 1
+D data_processor mspa1_PD_GATED_DOMAIN_PWR_3 3 2
+I 3
+P 45 1 - 6 - VL_PRCS_ASYNC_FLOP 0 1
+S valid_reg 0 0
+S data_reg 0 0
+E
+@ 14
+@ 13
+I 3
+D 3
+T 3 0
+S data_reg 8
+S valid_reg 1
+E
+L
+@ 1
+D always_on_ctrl mspa0_PD_AON_DOMAIN_PWR_2 2 2
+I 4
+P 44 1 - 6 - VL_PRCS_ASYNC_FLOP 0 2
+S ready_reg 0 0
+S capture_reg 0 0
+E
+@ 14
+@ 13
+I 4
+D 2
+T 3 0
+S capture_reg 8
+S ready_reg 1
+E
+L

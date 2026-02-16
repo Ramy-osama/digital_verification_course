@@ -1,0 +1,488 @@
+// ISO
+// single bit
+module mspa_iso_chk_cell_encrypt #(parameter chkid = 0) (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input;
+	output reg isolation_output;
+	input clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_encrypt #(parameter chkid = 0) (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input;
+	output bit isolation_output;
+	input clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'b0;
+ 	end
+
+
+
+endmodule
+
+// packed array
+module mspa_iso_chk_cell_vec_encrypt (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input [msb:0]isolation_input;
+	output reg [msb:0]isolation_output;
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_vec_encrypt (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit [msb:0]isolation_input;
+	output bit [msb:0]isolation_output;
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'b0;
+ 	end
+
+
+endmodule
+
+// unpacked array
+module mspa_iso_chk_cell_u_vec_encrypt (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input[msb:0];
+	output reg isolation_output[msb:0];
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output[i] = clamp_value[i];
+ 	 	 	else
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	  	isolation_output[i] = 1'bx;
+ 	end
+	end
+
+endmodule
+
+module mspa_iso_chk_cell_u_2state_vec_encrypt (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input[msb:0];
+	output bit isolation_output[msb:0];
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output[i] = clamp_value[i];
+ 	 	 	else
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	  	isolation_output[i] = 1'b0;
+ 	end
+ 	end
+
+
+endmodule
+
+
+// latch
+
+// single bit
+module mspa_iso_chk_cell_latch_encrypt #(parameter chkid = 0) (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input;
+	output reg isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_latch_encrypt #(parameter chkid = 0) (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input;
+	output bit isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'b0;
+ 	end
+
+
+endmodule
+
+// packed array
+module mspa_iso_chk_cell_latch_vec_encrypt (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input [msb:0]isolation_input;
+	output reg [msb:0]isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_latch_vec_encrypt (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit [msb:0]isolation_input;
+	output bit [msb:0]isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'b0;
+ 	end
+
+
+endmodule
+
+
+// unpacked array
+module mspa_iso_chk_cell_u_latch_vec_encrypt (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input[msb:0];
+	output reg isolation_output[msb:0];
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output[i] = 1'bx;
+ 	end
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_u_2state_latch_vec_encrypt (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input[msb:0];
+	output bit isolation_output[msb:0];
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output[i] = 1'b0;
+ 	end
+ 	end
+
+
+endmodule
+// LS
+module mspa_ls_cell_encrypt(ls_input,ls_output,internal_supply);
+	input wire internal_supply;
+	input ls_input;
+	output reg ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 1'bx;
+	end
+endmodule
+
+module mspa_ls_cell_2state_encrypt(ls_input,ls_output,internal_supply);
+	input wire internal_supply;
+	input bit ls_input;
+	output bit ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 1'b0;
+	end
+endmodule
+
+// packed array
+module mspa_ls_cell_vec_encrypt(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input [msb:0]ls_input;
+	output reg [msb:0]ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 'bx;
+	end
+endmodule
+
+module mspa_ls_cell_2state_vec_encrypt(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input bit [msb:0]ls_input;
+	output bit [msb:0]ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 'b0;
+	end
+endmodule
+
+// unpacked array
+module mspa_ls_cell_u_vec_encrypt(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input ls_input[msb:0];
+	output reg ls_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin : gen1
+		always@(internal_supply,ls_input[i])
+		begin : pcs
+			if(internal_supply)
+				ls_output[i] = ls_input[i];
+			else
+				ls_output[i] = 1'bx;
+		end
+	end
+endmodule
+
+module mspa_ls_cell_u_2state_vec_encrypt(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input bit ls_input[msb:0];
+	output bit ls_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+		always@(internal_supply,ls_input[i])
+		begin : pcs
+			if(internal_supply)
+				ls_output[i] = ls_input[i];
+			else
+				ls_output[i] = 1'b0;
+		end
+	end
+endmodule
+
+
+// RS buffers
+// single bit
+module mspa_rs_buf_encrypt(buf_input,buf_output,power);
+	input wire power;
+	input buf_input;
+	output reg buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 1'bx;
+	end
+endmodule
+
+module mspa_rs_buf_2state_encrypt(buf_input,buf_output,power);
+	input wire power;
+	input bit buf_input;
+	output bit buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 1'b0;
+	end
+endmodule
+
+// packed array
+module mspa_rs_buf_vec_encrypt(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input [msb:0]buf_input;
+	output reg [msb:0]buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 'bx;
+	end
+endmodule
+
+module mspa_rs_buf_2state_vec_encrypt(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input bit [msb:0]buf_input;
+	output bit [msb:0]buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 'b0;
+	end
+endmodule
+
+// unpacked array
+module mspa_rs_buf_u_vec_encrypt(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input buf_input[msb:0];
+	output reg buf_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin: gen1
+		always@(power,buf_input[i])
+		begin : pcs
+			if(power)
+				buf_output[i] = buf_input[i];
+			else
+				buf_output[i] = 1'bx;
+		end
+	end
+endmodule
+
+module mspa_rs_buf_u_2state_vec_encrypt(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input bit buf_input[msb:0];
+	output bit buf_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin: gen1
+		always@(power,buf_input[i])
+		begin : pcs
+			if(power)
+				buf_output[i] = buf_input[i];
+			else
+				buf_output[i] = 1'b0;
+		end
+	end
+endmodule

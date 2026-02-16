@@ -1,0 +1,42 @@
+--------------------------------------------------
+----- QuestaSim Power Aware UPF Report File  -----
+--------------------------------------------------
+Power Domain: PD_GATED, File: upf/power_intent.upf(44).
+	Creation Scope: /top_power_demo_tb/dut
+	Primary Supplies:
+		power  : /top_power_demo_tb/dut/VDD_GATED
+		ground : /top_power_demo_tb/dut/VSS_G
+
+	Isolation Strategy: iso_gated_to_aon, File: upf/power_intent.upf(146).
+		Isolation Supplies:
+			power  : /top_power_demo_tb/dut/VDD
+			ground : /top_power_demo_tb/dut/VSS
+		Isolation Control (/top_power_demo_tb/dut/iso_enable), Isolation Sense (HIGH), Clamp Value (0), Location (parent)
+		Isolated Signals:
+			1. Signal : /top_power_demo_tb/dut/u_data_proc/data_out
+			2. Signal : /top_power_demo_tb/dut/u_data_proc/data_valid
+
+-------------------------------------------------
+Power Domain: PD_AON, File: upf/power_intent.upf(40).
+	Creation Scope: /top_power_demo_tb/dut
+	Primary Supplies:
+		power  : /top_power_demo_tb/dut/VDD
+		ground : /top_power_demo_tb/dut/VSS
+
+
+-------------------------------------------------
+Pst power_modes, File:upf/power_intent.upf(117).
+	Scope => /top_power_demo_tb/dut
+	Header ==>                         : VDD VSS VDD_SW 
+	ALL_ON    upf/power_intent.upf(120): ON  ON  ON     
+	GATED_OFF upf/power_intent.upf(123): ON  ON  OFF    
+
+	List of possible states on:
+		VDD [ source supply port: VDD, File:upf/power_intent.upf(51)]
+			1. ON: 1.00
+		VSS [ source supply port: VSS, File:upf/power_intent.upf(52)]
+			1. ON: 0.00
+		VDD_SW [ source supply port: VDD_SW, File:upf/power_intent.upf(55)]
+			1. ON : 1.00
+			2. OFF: 0.00
+-------------------------------------------------

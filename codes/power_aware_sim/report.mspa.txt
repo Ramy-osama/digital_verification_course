@@ -1,0 +1,29 @@
+---------------------------------------------
+----- QuestaSim Power Aware Report File -----
+---------------------------------------------
+
+
+Total  ( top_power_demo_tb  )
+
+ NPM_FF # 18
+-----------------------------
+
+PD_AON sub_total ( /top_power_demo_tb/dut/u_aon_ctrl  )
+
+ NPM_FF # 9
+  /top_power_demo_tb/dut/u_aon_ctrl/ready_reg 1
+  /top_power_demo_tb/dut/u_aon_ctrl/capture_reg 8
+-----------------------------
+
+PD_GATED sub_total ( /top_power_demo_tb/dut/u_data_proc  )
+
+ NPM_FF # 9
+  /top_power_demo_tb/dut/u_data_proc/valid_reg 1
+  /top_power_demo_tb/dut/u_data_proc/data_reg 8
+-----------------------------
+
+-- NPM_FF => Denotes all Non Power Management Flip Flops of a Power Domain.
+-- NPM_LA => Denotes all Non Power Management Latches of a Power Domain.
+-- UDP_FF => Denotes all the Sequential UDPs inferred as flop of a Power Domain.
+-- UDP_LA => Denotes all the Sequential UDPs inferred as latch of a Power Domain.
+-- OUTPUT => Denotes all outputs and power signals,which are not sequential elements, of a Power Domain.

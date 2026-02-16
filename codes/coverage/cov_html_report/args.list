@@ -1,0 +1,7 @@
+-html
+-htmldir
+cov_html_report
+-verbose
+-source
+-details
+coverage.ucdb

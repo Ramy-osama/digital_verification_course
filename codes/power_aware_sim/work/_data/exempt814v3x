@@ -1,0 +1,981 @@
+`line 2 "mspa_vopt.v" 1
+/***************************************************
+ *               PA-RTLSim Netlist                 *
+ ***************************************************/
+
+`mspa_module
+
+module qpa_top;
+import mspa_pack::*;
+parameter int pa_param = 0;
+parameter int pa_cov_param = 0;
+parameter int pa_time0param = 0;//dummy..to avoid vsim warning of param not found.
+initial begin
+sSignalNames[0] = "high_to_low";
+sSignalNames[1] = "low_to_high";
+sSignalNames[2] = "";
+sSignalNames[3] = "}";
+end
+logic mspa_chk_rst;
+logic mspa_chk_rst_sampled;
+initial
+begin
+	$pa_assertoff();
+	mspa_chk_rst = 0;
+	#0 mspa_chk_rst = 1;
+end
+assign mspa_chk_rst_sampled = $sampled(mspa_chk_rst);
+always @(mspa_chk_rst_sampled)
+	begin
+	if(mspa_chk_rst_sampled === 1'b1)
+	 $pa_asserton();
+end
+initial sPaPrefix = "";
+initial begin
+	paopt_t0cond = 0;
+	#1 paopt_t0cond = 1;
+end
+
+generate if(pa_param) begin :PA_CS3
+	always @(posedge mspa1_PD_GATED_DOMAIN_PWR_3)
+		PA_CS[3] = 1'b1;
+	always @(posedge PA_CS[3])
+		PA_SIG[3] = 1'b1;
+	always @(posedge PA_SIG[3]) begin
+		PA_CS[3] = 1'b0;
+		PA_SIG[3] = 1'b0;
+	end
+end endgenerate
+generate if(pa_param) begin :PA_CS2
+	always @(posedge mspa0_PD_AON_DOMAIN_PWR_2)
+		PA_CS[2] = 1'b1;
+	always @(posedge PA_CS[2])
+		PA_SIG[2] = 1'b1;
+	always @(posedge PA_SIG[2]) begin
+		PA_CS[2] = 1'b0;
+		PA_SIG[2] = 1'b0;
+	end
+end endgenerate
+
+initial;
+
+// UPF Top's Instance
+upf_debug_top upf_debug_top();
+	always @(mspa0_PD_AON_DOMAIN_PWR)
+	if(paopt_t0cond)
+		mspa0_PD_AON_DOMAIN_PWR_2 = mspa0_PD_AON_DOMAIN_PWR;
+	 else if($root.qpa_top.pa_time0param)
+		#0 mspa0_PD_AON_DOMAIN_PWR_2 = mspa0_PD_AON_DOMAIN_PWR;
+
+	assign mspa0_PD_AON_DOMAIN_PWR_2_wire = ($root.qpa_top.pa_time0param) ? (paopt_t0cond ? mspa0_PD_AON_DOMAIN_PWR_2 : mspa0_PD_AON_DOMAIN_PWR) : (paopt_t0cond ? mspa0_PD_AON_DOMAIN_PWR_2 : 1'b1);
+	always @(mspa2_iso_gated_to_aon_ISO_PWR)
+	if(paopt_t0cond)
+		mspa2_iso_gated_to_aon_ISO_PWR_4 = mspa2_iso_gated_to_aon_ISO_PWR;
+	 else if($root.qpa_top.pa_time0param)
+		#0 mspa2_iso_gated_to_aon_ISO_PWR_4 = mspa2_iso_gated_to_aon_ISO_PWR;
+
+	assign mspa2_iso_gated_to_aon_ISO_PWR_4_wire = ($root.qpa_top.pa_time0param) ? (paopt_t0cond ? mspa2_iso_gated_to_aon_ISO_PWR_4 : mspa2_iso_gated_to_aon_ISO_PWR) : (paopt_t0cond ? mspa2_iso_gated_to_aon_ISO_PWR_4 : 1'b1);
+	always @(mspa1_PD_GATED_DOMAIN_PWR)
+	if(paopt_t0cond)
+		mspa1_PD_GATED_DOMAIN_PWR_3 = mspa1_PD_GATED_DOMAIN_PWR;
+	 else if($root.qpa_top.pa_time0param)
+		#0 mspa1_PD_GATED_DOMAIN_PWR_3 = mspa1_PD_GATED_DOMAIN_PWR;
+
+	assign mspa1_PD_GATED_DOMAIN_PWR_3_wire = ($root.qpa_top.pa_time0param) ? (paopt_t0cond ? mspa1_PD_GATED_DOMAIN_PWR_3 : mspa1_PD_GATED_DOMAIN_PWR) : (paopt_t0cond ? mspa1_PD_GATED_DOMAIN_PWR_3 : 1'b1);
+
+//Vhdl package signals spy
+generate if(pa_param) begin : vhdl_sigspy_blk
+	initial begin
+		$upf_init_signal_spy("mspa_pack::mspa0_PD_AON_DOMAIN_PWR_2","mspa_pack_vh::mspa0_PD_AON_DOMAIN_PWR_2",0);
+		$upf_init_signal_spy("mspa_pack::mspa2_iso_gated_to_aon_ISO_PWR_4","mspa_pack_vh::mspa2_iso_gated_to_aon_ISO_PWR_4",0);
+		$upf_init_signal_spy("mspa_pack::mspa1_PD_GATED_DOMAIN_PWR_3","mspa_pack_vh::mspa1_PD_GATED_DOMAIN_PWR_3",0);
+		$upf_init_signal_spy("mspa_pack::paopt_t0cond","mspa_pack_vh::paopt_t0cond",0);
+		$upf_init_signal_spy("mspa_pack::mspa3_iso_gated_to_aon_ISO_ENABLE","mspa_pack_vh::mspa3_iso_gated_to_aon_ISO_ENABLE",0);
+		$upf_init_signal_spy("mspa_pack::mspa2_iso_gated_to_aon_ISO_PWR","mspa_pack_vh::mspa2_iso_gated_to_aon_ISO_PWR",0);
+		$upf_init_signal_spy("mspa_pack::mspa1_PD_GATED_DOMAIN_PWR","mspa_pack_vh::mspa1_PD_GATED_DOMAIN_PWR",0);
+		$upf_init_signal_spy("mspa_pack::mspa0_PD_AON_DOMAIN_PWR","mspa_pack_vh::mspa0_PD_AON_DOMAIN_PWR",0);
+		$upf_init_signal_spy("mspa_pack::mspa1_PD_GATED_DOMAIN_PWR_3_wire","mspa_pack_vh::mspa1_PD_GATED_DOMAIN_PWR_3_wire",0);
+		$upf_init_signal_spy("mspa_pack::mspa2_iso_gated_to_aon_ISO_PWR_4_wire","mspa_pack_vh::mspa2_iso_gated_to_aon_ISO_PWR_4_wire",0);
+		$upf_init_signal_spy("mspa_pack::mspa0_PD_AON_DOMAIN_PWR_2_wire","mspa_pack_vh::mspa0_PD_AON_DOMAIN_PWR_2_wire",0);
+	end
+end endgenerate
+
+
+CORRUPT inst_CORRUPT_2(
+ .PWR(mspa0_PD_AON_DOMAIN_PWR)
+);
+
+CORRUPT inst_CORRUPT_3(
+ .PWR(mspa1_PD_GATED_DOMAIN_PWR)
+);
+endmodule
+// ISO
+// single bit
+module mspa_iso_chk_cell #(parameter chkid = 0) (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input;
+	output reg isolation_output;
+	input clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state #(parameter chkid = 0) (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input;
+	output bit isolation_output;
+	input clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'b0;
+ 	end
+
+
+
+endmodule
+
+// packed array
+module mspa_iso_chk_cell_vec (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input [msb:0]isolation_input;
+	output reg [msb:0]isolation_output;
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_vec (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit [msb:0]isolation_input;
+	output bit [msb:0]isolation_output;
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output = clamp_value;
+ 	 	 	else
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'b0;
+ 	end
+
+
+endmodule
+
+// unpacked array
+module mspa_iso_chk_cell_u_vec (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input[msb:0];
+	output reg isolation_output[msb:0];
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'bx;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output[i] = clamp_value[i];
+ 	 	 	else
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	  	isolation_output[i] = 1'bx;
+ 	end
+	end
+
+endmodule
+
+module mspa_iso_chk_cell_u_2state_vec (isolation_input,clamp_value,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input[msb:0];
+	output bit isolation_output[msb:0];
+	input [msb:0]clamp_value;
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'b0;
+ 	 	 	else if(isolation_signal === 1'b1)
+ 	 	 	 	isolation_output[i] = clamp_value[i];
+ 	 	 	else
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	  	isolation_output[i] = 1'b0;
+ 	end
+ 	end
+
+
+endmodule
+
+
+// latch
+
+// single bit
+module mspa_iso_chk_cell_latch #(parameter chkid = 0) (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input;
+	output reg isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_latch #(parameter chkid = 0) (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input;
+	output bit isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 1'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 1'b0;
+ 	end
+
+
+endmodule
+
+// packed array
+module mspa_iso_chk_cell_latch_vec (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input [msb:0]isolation_input;
+	output reg [msb:0]isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'bx;
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_2state_latch_vec (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit [msb:0]isolation_input;
+	output bit [msb:0]isolation_output;
+	input int portid, pdid;
+ 	always@(power,isolation_signal,isolation_input)
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output = 'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output = isolation_input;
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output = 'b0;
+ 	end
+
+
+endmodule
+
+
+// unpacked array
+module mspa_iso_chk_cell_u_latch_vec (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input isolation_input[msb:0];
+	output reg isolation_output[msb:0];
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'bx;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output[i] = 1'bx;
+ 	end
+ 	end
+
+
+endmodule
+
+module mspa_iso_chk_cell_u_2state_latch_vec (isolation_input,isolation_output,power,isolation_signal,sink_pwr,portid,pdid);
+	parameter msb = 0;
+	parameter chkid = 0;
+	input wire power,isolation_signal,sink_pwr;
+	input bit isolation_input[msb:0];
+	output bit isolation_output[msb:0];
+	input int portid, pdid;
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+ 	always@(power,isolation_signal,isolation_input[i])
+ 	begin : pcs
+ 	 	if(power)
+ 	 	begin
+ 	 	 	if(isolation_signal === 1'bx)
+ 	 	 	 	isolation_output[i] = 1'b0;
+ 	 	 	else if(isolation_signal !== 1'b1)
+ 	 	 	 	isolation_output[i] = isolation_input[i];
+ 	 	end
+ 	 	else
+ 	 	 	isolation_output[i] = 1'b0;
+ 	end
+ 	end
+
+
+endmodule
+// LS
+module mspa_ls_cell(ls_input,ls_output,internal_supply);
+	input wire internal_supply;
+	input ls_input;
+	output reg ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 1'bx;
+	end
+endmodule
+
+module mspa_ls_cell_2state(ls_input,ls_output,internal_supply);
+	input wire internal_supply;
+	input bit ls_input;
+	output bit ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 1'b0;
+	end
+endmodule
+
+// packed array
+module mspa_ls_cell_vec(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input [msb:0]ls_input;
+	output reg [msb:0]ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 'bx;
+	end
+endmodule
+
+module mspa_ls_cell_2state_vec(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input bit [msb:0]ls_input;
+	output bit [msb:0]ls_output;
+	always@(internal_supply,ls_input)
+	begin : pcs
+		if(internal_supply)
+			ls_output = ls_input;
+		else
+			ls_output = 'b0;
+	end
+endmodule
+
+// unpacked array
+module mspa_ls_cell_u_vec(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input ls_input[msb:0];
+	output reg ls_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin : gen1
+		always@(internal_supply,ls_input[i])
+		begin : pcs
+			if(internal_supply)
+				ls_output[i] = ls_input[i];
+			else
+				ls_output[i] = 1'bx;
+		end
+	end
+endmodule
+
+module mspa_ls_cell_u_2state_vec(ls_input,ls_output,internal_supply);
+	parameter msb = 0;
+	input wire internal_supply;
+	input bit ls_input[msb:0];
+	output bit ls_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1)
+	begin : gen1
+		always@(internal_supply,ls_input[i])
+		begin : pcs
+			if(internal_supply)
+				ls_output[i] = ls_input[i];
+			else
+				ls_output[i] = 1'b0;
+		end
+	end
+endmodule
+
+
+// RS buffers
+// single bit
+module mspa_rs_buf(buf_input,buf_output,power);
+	input wire power;
+	input buf_input;
+	output reg buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 1'bx;
+	end
+endmodule
+
+module mspa_rs_buf_2state(buf_input,buf_output,power);
+	input wire power;
+	input bit buf_input;
+	output bit buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 1'b0;
+	end
+endmodule
+
+// packed array
+module mspa_rs_buf_vec(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input [msb:0]buf_input;
+	output reg [msb:0]buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 'bx;
+	end
+endmodule
+
+module mspa_rs_buf_2state_vec(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input bit [msb:0]buf_input;
+	output bit [msb:0]buf_output;
+	always@(power,buf_input)
+	begin : pcs
+		if(power)
+			buf_output = buf_input;
+		else
+			buf_output = 'b0;
+	end
+endmodule
+
+// unpacked array
+module mspa_rs_buf_u_vec(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input buf_input[msb:0];
+	output reg buf_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin: gen1
+		always@(power,buf_input[i])
+		begin : pcs
+			if(power)
+				buf_output[i] = buf_input[i];
+			else
+				buf_output[i] = 1'bx;
+		end
+	end
+endmodule
+
+module mspa_rs_buf_u_2state_vec(buf_input,buf_output,power);
+	parameter msb = 0;
+	input wire power;
+	input bit buf_input[msb:0];
+	output bit buf_output[msb:0];
+	for(genvar i=0;i<=msb;i=i+1) begin: gen1
+		always@(power,buf_input[i])
+		begin : pcs
+			if(power)
+				buf_output[i] = buf_input[i];
+			else
+				buf_output[i] = 1'b0;
+		end
+	end
+endmodule
+/*===== CORRUPT POWER AWARE MODEL =====*/
+module CORRUPT(PWR);
+   input PWR;
+   event mspa_corrupt_register;
+   event mspa_release_register;
+   initial begin
+        #0;
+        if($root.qpa_top.pa_time0param == 1 && (PWR === 1'bx || PWR === 1'b0))
+            ->mspa_corrupt_register;
+   end
+   always @(negedge PWR)
+     -> mspa_corrupt_register;
+   always @(posedge PWR)
+     -> mspa_release_register;
+endmodule
+/*===== CORRUPT POWER AWARE MODEL =====*/
+module MSPA_CRPT_DELAYED_FF(input PWR, BIAS_TRIGGER, CLK, RESET, SET,D,output Q);
+    event  pa_reset_register,pa_set_register;
+    event  pa_corrupt_register,pa_release_register;
+
+   initial begin
+        #0;
+        if($root.qpa_top.pa_time0param == 1 && (PWR === 1'bx || PWR === 1'b0))
+            ->pa_corrupt_register;
+   end
+    always@(posedge PWR or BIAS_TRIGGER)
+    begin
+       ->pa_release_register;
+       #0
+       if(RESET) 
+         ->pa_reset_register;
+       else if(SET) 
+         ->pa_set_register;
+    end
+    always@(negedge PWR)
+       ->pa_corrupt_register;
+endmodule
+/*===== BIAS CORRUPT POWER AWARE MODEL =====*/
+module BIAS_CORRUPT(in_bias_mode);
+    input in_bias_mode;
+    event pa_bias_mode_on;
+    event pa_bias_mode_off;
+    initial begin
+        #0;
+        if($root.qpa_top.pa_time0param == 1 && (in_bias_mode === 1'b1))
+            ->pa_bias_mode_on;
+    end
+    always @(posedge in_bias_mode)
+        -> pa_bias_mode_on;
+    always @(negedge in_bias_mode)
+        -> pa_bias_mode_off;
+endmodule
+module upf_iso_cell_model(ISO);
+   input ISO;
+   event mspa_corrupt_register;
+   event mspa_release_register;
+   always @(posedge ISO)
+     -> mspa_corrupt_register;
+   always @(negedge ISO)
+     -> mspa_release_register;
+endmodule
+module upf_iso_cell_model_pwr(ISO,PWR);
+   input ISO,PWR;
+   event mspa_corrupt_register;
+   event mspa_release_register;
+   event mspa_iso_on;
+   initial begin
+        #0;
+        if($root.qpa_top.pa_time0param == 1 && (PWR === 1'bx || PWR === 1'b0))
+            ->mspa_corrupt_register;
+        else if($root.qpa_top.pa_time0param == 1 && (PWR === 1'b1 && ISO === 1'b1))
+            ->mspa_iso_on;
+   end
+   always @(posedge ISO)
+   begin
+     if(PWR)
+     begin
+      	if(ISO === 1'bx)
+           	-> mspa_corrupt_register;
+      	else
+              -> mspa_iso_on;
+     end
+   end
+   always @(negedge ISO)
+   begin
+     if(PWR)
+     begin
+      	if(ISO === 1'bx)
+           	-> mspa_corrupt_register;
+      	else
+              -> mspa_release_register;
+    	end
+   end
+   always @(posedge PWR)
+   begin
+      if(ISO === 1'b1)
+           -> mspa_iso_on;
+      else if(ISO === 1'b0)
+           -> mspa_release_register;
+   end
+   always @(negedge PWR)
+     -> mspa_corrupt_register;
+endmodule
+/*===== RETENTION LEVEL POWER AWARE MODEL =====*/
+module upf_retention_ret_level (
+  CLK, RESET,SET,
+  RET, PWR, RETPWR,
+  BIAS_TRIGGER, D, Q
+ );
+
+  input CLK;
+  input RESET; // active high
+  input SET;   // active high
+  input RET;   
+  input PWR;
+  input RETPWR;
+  input BIAS_TRIGGER;
+
+  output Q;
+  input  D;
+
+  parameter int pa_time0param = 0;
+
+  event pa_store_value ;
+  event pa_store_x ;
+  event pa_restore_value ;
+  event pa_corrupt_register ;
+  event pa_release_register ;
+  event pa_restore_hold_register ;
+  event pa_set_register;
+  event pa_reset_register;
+
+  initial begin
+    #0;
+    if(pa_time0param && (PWR === 1'bx || PWR === 1'b0))
+        ->pa_corrupt_register;
+  end
+
+  wire restore_signal_is_active;
+  wire restore_condition_is_true = 1'b1; 
+  assign restore_signal_is_active = !RET;
+  wire save_signal_is_active;
+  wire save_condition_is_true = 1'b1;
+  assign save_signal_is_active = RET;
+ 
+  always @(PWR or RETPWR or restore_signal_is_active or BIAS_TRIGGER) begin: restore_process
+    if (PWR && RETPWR && !restore_signal_is_active) begin
+      // Nothing to be done. original behavior of register
+      -> pa_release_register;
+      #0   
+      if (RESET) -> pa_reset_register;
+      else if (SET) -> pa_set_register;
+
+    end else if (PWR && RETPWR && restore_signal_is_active) begin
+      #0 -> pa_restore_hold_register;  // to allow updating stored value from saved_process, this mimics the hardware 
+                                       // behavior of asynchonous set or reset depending on the last latched value
+
+    end else begin
+      -> pa_corrupt_register;
+    end
+  end:restore_process
+
+  // negedge save_signal_is_active because of level sensitive behavior. Cant make this process sensitive to q hence 
+  // need to take special care and trigger the store_value at trailing edge of level sensitive signal as defined in lrm.
+  always @(negedge RETPWR or negedge save_signal_is_active) begin:save_process
+    if (RETPWR ) begin
+      -> pa_store_value;
+    end else begin
+      -> pa_store_x;
+    end 
+  end:save_process
+
+endmodule
+/*===== RETENTION SR LEVEL POWER AWARE MODEL =====*/
+module upf_retention_sr_level (
+  CLK, RESET,SET,
+  SAVE, RESTORE, PWR, RETPWR,
+  BIAS_TRIGGER, D, Q
+  );
+
+  input CLK;
+  input RESET;
+  input SET;
+  input SAVE;
+  input RESTORE;
+  input PWR;
+  input RETPWR;
+  input BIAS_TRIGGER;
+
+  output Q;
+  input  D;
+
+  parameter int pa_time0param = 0;
+
+  event pa_store_value ;
+  event pa_store_x ;
+  event pa_restore_value ;
+  event pa_restore_x ;
+  event pa_corrupt_register ;
+  event pa_release_register ;
+  event pa_restore_hold_register;
+  event pa_set_register;
+  event pa_reset_register;
+  
+  initial begin
+    #0;
+    if(pa_time0param && (PWR === 1'bx || PWR === 1'b0))
+        ->pa_corrupt_register;
+    else if (pa_time0param && (RESTORE == 1'b1 && SAVE == 1'b1))
+        -> pa_store_x;
+        #0 -> pa_restore_hold_register;
+  end
+
+  wire restore_signal_is_active;
+  wire restore_condition_is_true = 1'b1; 
+  assign restore_signal_is_active = RESTORE;
+  wire save_signal_is_active;
+  wire save_condition_is_true = 1'b1;
+  assign save_signal_is_active = SAVE;
+
+  
+  // Corruption when both save and restore signals are active simultaneously
+  always @(save_signal_is_active or restore_signal_is_active) begin: both_active
+    if (save_signal_is_active && restore_signal_is_active ) begin
+        -> pa_store_x;                   // corrupt the retained value as per UPF LRM
+        #0 -> pa_restore_hold_register;  // corrupt the register value as per UPF LRM
+    end
+  end 
+   
+  always @(PWR or RETPWR or restore_signal_is_active or BIAS_TRIGGER) begin: restore_process
+    if (PWR && RETPWR && !restore_signal_is_active) begin
+      // Nothing to be done. original behavior of register
+      -> pa_release_register;
+      #0
+      if (RESET) -> pa_reset_register;
+      else if (SET) -> pa_set_register;
+
+    end else if (PWR && RETPWR && restore_signal_is_active) begin
+      #0 -> pa_restore_hold_register;  // to allow updating stored value from saved_process, this mimics the hardware 
+                                       // behavior of asynchonous set or reset depending on the last latched value
+
+    end else begin
+      -> pa_corrupt_register;
+    end
+
+  end:restore_process
+
+  // negedge save_signal_is_active because of level sensitive behavior. Cant make this process sensitive to q hence 
+  // need to take special care and trigger the store_value at trailing edge of level sensitive signal as defined in lrm.
+  always @(negedge RETPWR or negedge save_signal_is_active) begin:save_process
+    if (RETPWR) begin
+      -> pa_store_value;
+    end else begin
+      -> pa_store_x;
+    end 
+  end:save_process
+
+  
+endmodule
+
+module upf_retention_ret (
+  CLK, RESET,SET,
+  RET, PWR, RETPWR,
+  BIAS_TRIGGER, D, Q
+ );
+
+  input CLK;
+  input RESET;
+  input SET;
+  input RET;
+  input PWR;
+  input RETPWR;
+  input BIAS_TRIGGER;
+
+  output Q;
+  input  D;
+
+  event pa_store_value ;
+  event pa_store_x ;
+  event pa_restore_value ;
+  event pa_corrupt_register ;
+  event pa_release_register ;
+  event pa_set_register;
+  event pa_reset_register;
+
+  initial begin
+    #0;
+    if(qpa_top.pa_time0param && (PWR === 1'bx || PWR === 1'b0))
+        ->pa_corrupt_register;
+  end
+   
+  always @(PWR or RETPWR or BIAS_TRIGGER) begin: pwr_down_proc
+      if (PWR && RETPWR) begin
+          -> pa_release_register;
+          #0 
+          if (RESET) -> pa_reset_register;
+          else if (SET) -> pa_set_register;
+  
+      end else begin 
+          -> pa_corrupt_register;
+          if (!RETPWR) begin 
+          -> pa_store_x;
+          end
+      end
+  end: pwr_down_proc
+  
+  always @(negedge RET) begin: restore_proc
+      if (PWR && RETPWR && ~RET) begin
+          -> pa_restore_value;
+      end
+  end: restore_proc
+  
+  
+  always @(posedge RET) begin: save_proc
+      if (RETPWR && RET) begin
+          -> pa_store_value;
+      end
+  end: save_proc
+  
+
+endmodule
+module upf_retention_sr (
+  CLK, RESET,SET,
+  SAVE, RESTORE, PWR, RETPWR,
+  BIAS_TRIGGER, D, Q
+ );
+
+  input CLK;
+  input RESET;
+  input SET;
+  input SAVE;
+  input RESTORE;
+  input PWR;
+  input RETPWR;
+  input BIAS_TRIGGER;
+
+  output Q;
+  input  D;
+
+  event pa_store_value ;
+  event pa_store_x ;
+  event pa_restore_value ;
+  event pa_corrupt_register ;
+  event pa_release_register ;
+  event pa_set_register;
+  event pa_reset_register;
+
+  initial begin
+    #0;
+    if(qpa_top.pa_time0param && (PWR === 1'bx || PWR === 1'b0))
+        ->pa_corrupt_register;
+  end
+
+  always @(PWR or RETPWR or BIAS_TRIGGER) begin: pwr_down_proc
+      if (PWR && RETPWR) begin
+          -> pa_release_register;
+          #0 
+          if (RESET) -> pa_reset_register;
+          else if (SET) -> pa_set_register;
+
+      end else begin 
+          -> pa_corrupt_register;
+          if (!RETPWR) begin 
+          -> pa_store_x;
+          end
+      end
+  end: pwr_down_proc
+
+  always @(posedge RESTORE) begin: restore_proc
+      if (PWR && RETPWR && RESTORE) begin
+          -> pa_restore_value;
+      end
+  end: restore_proc
+
+
+  always @(posedge SAVE) begin: save_proc
+      if (RETPWR && SAVE) begin
+          -> pa_store_value;
+      end
+  end: save_proc
+
+endmodule

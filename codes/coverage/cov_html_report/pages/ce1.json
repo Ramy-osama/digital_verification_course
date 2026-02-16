@@ -1,0 +1,28 @@
+var g_data = {
+c1643348548_2504951754_0:[{dummy:0}
+,{anchor:'cvg9',items:[{s:'3',x:'FC',lnk:'__HDL_srcfile_1.htm#266',z:'((get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98) && (iter_count < 2000))',c:'Y',p:'50.00',d:'0',F:'1'}
+,{}
+,{z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)',c:'g',r:'',i:''}
+,{z:'(iter_count < 2000)',c:'r',r:'\'_0\' not hit',i:'Hit \'_0\''}
+,{}
+,{n:'1',z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)_0',h1:'1',t:'c',c1:'-'}
+,{n:'2',z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)_1',h1:'1',t:'c',c1:'(iter_count < 2000)'}
+,{n:'3',z:'(iter_count < 2000)_0',h1:'0',t:'c',c1:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98)'}
+,{n:'4',z:'(iter_count < 2000)_1',h1:'1',t:'c',c1:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98)'}
+]}
+],
+c3351648659_2074319091_0:[{dummy:0}
+,{anchor:'cvg131',items:[{s:'3',x:'FC',lnk:'__HDL_srcfile_1.htm#266',z:'((get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98) && (iter_count < 2000))',c:'Y',p:'50.00',d:'0',F:'1'}
+,{}
+,{z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)',c:'g',r:'',i:''}
+,{z:'(iter_count < 2000)',c:'r',r:'\'_0\' not hit',i:'Hit \'_0\''}
+,{}
+,{n:'1',z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)_0',h1:'1',t:'c',c1:'-'}
+,{n:'2',z:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98.000000)_1',h1:'1',t:'c',c1:'(iter_count < 2000)'}
+,{n:'3',z:'(iter_count < 2000)_0',h1:'0',t:'c',c1:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98)'}
+,{n:'4',z:'(iter_count < 2000)_1',h1:'1',t:'c',c1:'(get_coverage(#dummy_covered_bins#,#dummy_total_bins#) < 98)'}
+]}
+],
+dummyEnd:0
+};
+processCondExprData(g_data);

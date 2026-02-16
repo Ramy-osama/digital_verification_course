@@ -1,0 +1,242 @@
+# //  Questa Sim-64
+# //  Version 10.4e win64 Apr  9 2016
+# //
+# //  Copyright 1991-2016 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
+# //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# //  THIS DOCUMENT CONTAINS TRADE SECRETS AND COMMERCIAL OR FINANCIAL
+# //  INFORMATION THAT ARE PRIVILEGED, CONFIDENTIAL, AND EXEMPT FROM
+# //  DISCLOSURE UNDER THE FREEDOM OF INFORMATION ACT, 5 U.S.C. SECTION 552.
+# //  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE UNDER
+# //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
+# //
+# do run.do
+# C:/Users/Ramy/Desktop/Digital design verification course/codes/power_aware_sim
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:34:34 on Feb 14,2026
+# vlog -reportprogress 300 -sv "+acc" -L mtiUPF rtl/data_processor.sv rtl/always_on_ctrl.sv rtl/top_power_demo.sv tb/top_power_demo_tb.sv 
+# -- Compiling module data_processor
+# -- Compiling module always_on_ctrl
+# -- Compiling module top_power_demo
+# -- Compiling package top_power_demo_tb_sv_unit
+# -- Importing package mtiUPF.UPF
+# -- Compiling module top_power_demo_tb
+# 
+# Top level modules:
+# 	top_power_demo_tb
+# End time: 16:34:34 on Feb 14,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vopt 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:34:34 on Feb 14,2026
+# vopt -reportprogress 300 "+acc" work.top_power_demo_tb -o opt_tb -pa_upf upf/power_intent.upf -pa_top /top_power_demo_tb/dut -pa_genrpt=v+us 
+# 
+# Top level modules:
+# 	top_power_demo_tb
+# 
+# Analyzing design...
+# -- Loading module top_power_demo_tb
+# -- Loading module top_power_demo
+# -- Loading module data_processor
+# -- Loading module always_on_ctrl
+# -- Processing UPF File: upf/power_intent.upf
+# -- Resolving UPF Supply Network
+# -- Processing power-aware module data_processor(fast)
+# -- Processing power-aware module always_on_ctrl(fast)
+# 
+#  pa report 
+# Generated Power Aware Report : report.upf.txt
+# Generated Power Aware Report : report.mspa.txt
+# 
+# -- Invoking Power Hierarchy Compilation
+# 
+# Optimizing 17 design-units (inlining 0/14 module instances, 0/0 UDP instances):
+# -- Optimizing module top_power_demo_tb(fast)
+# -- Optimizing module top_power_demo(fast)
+# -- Optimizing module data_processor(fast)
+# -- Optimizing module always_on_ctrl(fast)
+# -- Optimizing package mspa_pack(fast)
+# -- Optimizing package mtiUPF.UPF(fast)
+# -- Optimizing package top_power_demo_tb_sv_unit(fast)
+# Optimized design name is opt_tb
+# Errors: 0, Warnings: 0
+# vsim -pa -suppress 3009 -L mtiUPF work.opt_tb -onfinish stop 
+# Start time: 16:34:37 on Feb 14,2026
+# Loading sv_std.std
+# Loading mtiUPF.UPF
+# Loading work.top_power_demo_tb_sv_unit(fast)
+# Loading work.top_power_demo_tb(fast)
+# Loading work.mspa_pack(fast)
+# Loading work.top_power_demo(fast)
+# Loading work.data_processor(fast)
+# Loading work.always_on_ctrl(fast)
+# Loading work.mspa_iso_chk_cell_vec(fast)
+# Loading work.mspa_iso_chk_cell(fast)
+# Loading work.qpa_top(fast)
+# Loading work.upf_debug_top(fast)
+# Loading work.top_power_demo_tb_qpaupfScope2(fast)
+# Loading work.dut_qpaupfScope1(fast)
+# Loading work.mspa28_power_domain_PD_GATED(fast)
+# Loading work.mspa32_iso_strategy_iso_gated_to_aon(fast)
+# Loading work.mspa24_power_domain_PD_AON(fast)
+# Loading work.CORRUPT(fast)
+# Initializing Power Aware mode
+# 0
+# =============================================================
+#  Power-Aware Simulation Demo - Starting Test
+#  Two domains: PD_AON (always-on) + PD_GATED (power-gated)
+# =============================================================
+# 
+#   Turning on power supplies...
+#   All supplies ON: VDD=1.0V, VSS=0.0V, VDD_SW=1.0V
+# 
+# 
+#   Reset released. Both domains are powered ON.
+# 
+# =============================================================
+#  PHASE 1: Normal Operation (both domains powered ON)
+# =============================================================
+#   Sending data through the power-gated processor to the
+#   always-on controller. Data should flow normally.
+# 
+#   [56] After sending 0xAA:
+#     data_in       = 0xaa  enable     = 1
+#     proc_data_out = 0xab  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0x00  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   [66] After sending 0x55:
+#     data_in       = 0x55  enable     = 1
+#     proc_data_out = 0x56  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0xab  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   [76] After sending 0xFF:
+#     data_in       = 0xff  enable     = 1
+#     proc_data_out = 0x00  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0x56  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   [86] After sending 0x00:
+#     data_in       = 0x00  enable     = 1
+#     proc_data_out = 0x01  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0x00  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   [96] After disabling processor:
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0x01  proc_valid = 0  (pre-isolation, from gated domain)
+#     captured_data = 0x01  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   Phase 1 Complete: Data flowed correctly from PD_GATED to PD_AON.
+# 
+# =============================================================
+#  PHASE 2: Power-Down Sequence
+# =============================================================
+#   Step 2a: Assert isolation (iso_enable = 1)
+#            Isolation cells clamp gated outputs to 0.
+# 
+#   [106] After isolation enabled (power still ON):
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0x01  proc_valid = 0  (pre-isolation, from gated domain)
+#     captured_data = 0x01  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   Step 2b: >>> POWER OFF VDD_GATED <<<
+#            supply_off(VDD_SW) called.
+#            Processor registers lose state (become X).
+#            Isolation cells clamp outputs to 0.
+# 
+#   [155] During power-off (gated domain outputs should be X/isolated):
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0xxx  proc_valid = x  (pre-isolation, from gated domain)
+#     captured_data = 0x01  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   Verifying: Always-on domain still operational...
+#     captured_data = 0x01 (should retain last captured value)
+#     The always-on domain is unaffected by the gated domain power-off.
+# 
+#   Phase 2 Complete: PD_GATED is powered off, PD_AON is isolated.
+# 
+# =============================================================
+#  PHASE 3: Power-Up Sequence
+# =============================================================
+#   Step 3a: >>> POWER ON VDD_GATED <<<
+#            supply_on(VDD_SW, 1.0) called.
+#            Power restored, but registers are still X.
+# 
+#   [175] After power restored (before reset):
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0xxx  proc_valid = 0  (pre-isolation, from gated domain)
+#     captured_data = 0x01  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   Step 3b: Reset the gated domain (re-initialize registers)
+#   [216] After reset (gated domain re-initialized):
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0x00  proc_valid = 0  (pre-isolation, from gated domain)
+#     captured_data = 0x00  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   Step 3c: De-assert isolation (iso_enable = 0)
+#            Gated domain outputs now flow to always-on domain.
+# 
+#   [226] After isolation de-asserted:
+#     data_in       = 0x00  enable     = 0
+#     proc_data_out = 0x00  proc_valid = 0  (pre-isolation, from gated domain)
+#     captured_data = 0x00  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   Phase 3 Complete: PD_GATED is back online.
+# 
+# =============================================================
+#  PHASE 4: Resumed Normal Operation (both domains ON)
+# =============================================================
+#   Sending data again to verify full functionality.
+# 
+#   [236] After sending 0x42:
+#     data_in       = 0x42  enable     = 1
+#     proc_data_out = 0x43  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0x00  data_ready = 0  (post-isolation, in always-on domain)
+# 
+#   [246] After sending 0xDE:
+#     data_in       = 0xde  enable     = 1
+#     proc_data_out = 0xdf  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0x43  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   [256] After sending 0x10:
+#     data_in       = 0x10  enable     = 1
+#     proc_data_out = 0x11  proc_valid = 1  (pre-isolation, from gated domain)
+#     captured_data = 0xdf  data_ready = 1  (post-isolation, in always-on domain)
+# 
+#   Phase 4 Complete: Normal operation resumed successfully.
+# 
+# =============================================================
+#  SIMULATION COMPLETE - Power-Aware Demo Summary
+# =============================================================
+#   Phase 1: Normal operation     - Data flowed correctly
+#   Phase 2: Power-down sequence   - Isolation protected AON domain
+#   Phase 3: Power-up sequence     - Domain restored and reset
+#   Phase 4: Resumed operation     - Full functionality verified
+# 
+#   KEY TAKEAWAYS:
+#   1. Always isolate BEFORE powering off (prevent X propagation)
+#   2. Always power on BEFORE de-isolating
+#   3. Always reset gated domain after power-up
+#   4. Always-on domain retains state through power transitions
+# =============================================================
+# 
+# ** Note: $finish    : tb/top_power_demo_tb.sv(294)
+#    Time: 356 ns  Iteration: 0  Instance: /top_power_demo_tb
+# Break in Module top_power_demo_tb at tb/top_power_demo_tb.sv line 294
+# 0
+# Break key hit
+add wave -position insertpoint  \
+sim:/UPF::supply_on/supply_on \
+sim:/UPF::supply_on/pad_name \
+sim:/UPF::supply_on/value \
+sim:/UPF::supply_on/final_value \
+sim:/UPF::supply_on/result \
+sim:/UPF::supply_on/volt
+add wave -position insertpoint  \
+sim:/UPF::supply_off/supply_off \
+sim:/UPF::supply_off/pad_name \
+sim:/UPF::supply_off/final_value \
+sim:/UPF::supply_off/result
+add wave -position insertpoint  \
+sim:/top_power_demo_tb/dut/u_aon_ctrl/proc_data \
+sim:/top_power_demo_tb/dut/u_aon_ctrl/proc_valid

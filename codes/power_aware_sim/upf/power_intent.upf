@@ -1,0 +1,156 @@
+#=============================================================================
+# UPF Power Intent File: power_intent.upf
+# Standard: IEEE 1801 (Unified Power Format)
+#
+# Description:
+#   Defines the power intent for the top_power_demo design with two domains:
+#
+#   1. PD_AON    (Always-On Domain)    - Top level + always_on_ctrl
+#      - Supply: VDD / VSS
+#      - Never powered off
+#
+#   2. PD_GATED  (Power-Gated Domain)  - data_processor (u_data_proc)
+#      - Supply: VDD_GATED / VSS
+#      - Can be powered off to save energy
+#      - Outputs are isolated (clamped to 0) when powered off
+#
+# Architecture:
+#
+#   PD_GATED                    PD_AON
+#  ┌─────────────────┐        ┌─────────────────┐
+#  │  data_processor  │─►ISO──►│  always_on_ctrl  │
+#  │                 │        │                 │
+#  │  VDD_GATED/VSS  │        │    VDD/VSS      │
+#  └─────────────────┘        └─────────────────┘
+#
+#=============================================================================
+
+#=============================================================================
+# Step 1: Set the design scope
+#=============================================================================
+# All UPF commands apply relative to this scope
+set_scope top_power_demo
+
+#=============================================================================
+# Step 2: Create Power Domains
+#=============================================================================
+
+# PD_AON: The always-on domain (top-level default domain)
+# -include_scope means everything in top_power_demo belongs here by default
+create_power_domain PD_AON -include_scope
+
+# PD_GATED: The power-gated domain containing the data processor
+# -elements specifies which RTL instances belong to this domain
+create_power_domain PD_GATED -elements {u_data_proc}
+
+#=============================================================================
+# Step 3: Create Supply Ports (external connections to power pads)
+#=============================================================================
+
+# Main always-on supply
+create_supply_port VDD      -direction in
+create_supply_port VSS      -direction in
+
+# Switchable supply for the gated domain
+create_supply_port VDD_SW   -direction in
+
+#=============================================================================
+# Step 4: Create Supply Nets (internal power distribution)
+#=============================================================================
+
+# Always-on supply nets
+create_supply_net VDD   -domain PD_AON
+create_supply_net VSS   -domain PD_AON
+
+# Gated domain supply nets
+create_supply_net VDD_GATED -domain PD_GATED
+create_supply_net VSS_G     -domain PD_GATED
+
+#=============================================================================
+# Step 5: Connect Supply Nets to Ports
+#=============================================================================
+
+# Connect always-on supplies
+connect_supply_net VDD -ports {VDD}
+connect_supply_net VSS -ports {VSS}
+
+# Connect switchable supply
+connect_supply_net VDD_GATED -ports {VDD_SW}
+
+# Ground is shared between domains
+connect_supply_net VSS_G -ports {VSS}
+
+#=============================================================================
+# Step 6: Set Primary Power and Ground for Each Domain
+#=============================================================================
+
+# PD_AON uses VDD/VSS
+set_domain_supply_net PD_AON \
+    -primary_power_net VDD \
+    -primary_ground_net VSS
+
+# PD_GATED uses VDD_GATED/VSS_G
+set_domain_supply_net PD_GATED \
+    -primary_power_net VDD_GATED \
+    -primary_ground_net VSS_G
+
+#=============================================================================
+# Step 7: Define Power States for Supply Nets
+#=============================================================================
+
+# Always-on VDD is always at full voltage
+add_port_state VDD  -state {ON  1.0}
+
+# VSS is always at ground
+add_port_state VSS  -state {ON  0.0}
+
+# Switchable VDD can be ON (1.0V) or OFF (0V)
+add_port_state VDD_SW -state {ON  1.0} \
+                       -state {OFF 0.0}
+
+#=============================================================================
+# Step 8: Create Power State Table (PST)
+#=============================================================================
+# The PST defines all legal combinations of supply states.
+# This tells the tool which power modes are valid.
+
+create_pst power_modes -supplies {VDD VSS VDD_SW}
+
+# ALL_ON: Both domains powered - normal operation
+add_pst_state ALL_ON -pst power_modes -state {ON ON ON}
+
+# GATED_OFF: Power-gated domain is off - low power mode
+add_pst_state GATED_OFF -pst power_modes -state {ON ON OFF}
+
+#=============================================================================
+# Step 9: Define Isolation Strategy
+#=============================================================================
+# When PD_GATED is powered off, its outputs become X (unknown).
+# Isolation cells clamp these outputs to known safe values (0)
+# to prevent X propagation into the always-on domain.
+#
+# Key parameters:
+#   -domain PD_GATED          : Isolate outputs FROM this domain
+#   -applies_to outputs       : Only isolate output ports of the domain
+#   -clamp_value 0            : Clamp to logic 0 when isolated
+#   -isolation_signal iso_enable : Control signal for isolation
+#   -isolation_sense high     : Isolate when iso_enable = 1
+#   -location parent          : Place isolation cells in the parent (PD_AON)
+#                               so they remain powered when PD_GATED is off
+
+set_isolation iso_gated_to_aon \
+    -domain PD_GATED \
+    -applies_to outputs \
+    -clamp_value 0 \
+    -isolation_power_net VDD \
+    -isolation_ground_net VSS
+
+set_isolation_control iso_gated_to_aon \
+    -domain PD_GATED \
+    -isolation_signal {iso_enable} \
+    -isolation_sense high \
+    -location parent
+
+#=============================================================================
+# End of UPF
+#=============================================================================
