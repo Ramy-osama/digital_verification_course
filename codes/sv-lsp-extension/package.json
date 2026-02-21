@@ -1,0 +1,162 @@
+{
+  "name": "sv-lsp",
+  "displayName": "SystemVerilog / Verilog Language Server",
+  "description": "LSP server for Verilog and SystemVerilog: Go to Definition, Find References, Hover, Symbols, Diagnostics",
+  "version": "0.7.0",
+  "publisher": "ramy",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:systemverilog",
+    "onLanguage:verilog"
+  ],
+  "main": "./client/out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "systemverilog",
+        "aliases": [
+          "SystemVerilog",
+          "systemverilog",
+          "sv"
+        ],
+        "extensions": [
+          ".sv",
+          ".svh",
+          ".svi"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "verilog",
+        "aliases": [
+          "Verilog",
+          "verilog",
+          "v"
+        ],
+        "extensions": [
+          ".v",
+          ".vh",
+          ".vl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "systemverilog",
+        "scopeName": "source.systemverilog",
+        "path": "./syntaxes/systemverilog.tmLanguage.json"
+      },
+      {
+        "language": "verilog",
+        "scopeName": "source.systemverilog",
+        "path": "./syntaxes/systemverilog.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "svLsp.showClassHierarchy",
+        "title": "SV: Show Class Hierarchy"
+      },
+      {
+        "command": "svLsp.generateDoFile",
+        "title": "SV: Generate DO File"
+      },
+      {
+        "command": "svLsp.runQuestaSim",
+        "title": "SV: Run in QuestaSim"
+      },
+      {
+        "command": "svLsp.copyForPresentation",
+        "title": "SV: Copy for Presentation"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "svLsp.showClassHierarchy",
+          "when": "editorLangId == systemverilog || editorLangId == verilog",
+          "group": "navigation@100"
+        },
+        {
+          "command": "svLsp.generateDoFile",
+          "when": "editorLangId == systemverilog || editorLangId == verilog",
+          "group": "navigation@101"
+        },
+        {
+          "command": "svLsp.runQuestaSim",
+          "when": "editorLangId == systemverilog || editorLangId == verilog",
+          "group": "navigation@102"
+        },
+        {
+          "command": "svLsp.copyForPresentation",
+          "when": "editorLangId == systemverilog || editorLangId == verilog",
+          "group": "navigation@103"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "SystemVerilog LSP",
+      "properties": {
+        "svLsp.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Maximum number of diagnostics reported per file."
+        },
+        "svLsp.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        },
+        "svLsp.questaSimPath": {
+          "scope": "machine-overridable",
+          "type": "string",
+          "default": "vsim",
+          "description": "Path to the QuestaSim vsim executable. Use 'vsim' if it is on your system PATH, or provide the full path (e.g., C:/questasim64_10.4e/win64/vsim.exe)."
+        },
+        "svLsp.presentation.fontFamily": {
+          "scope": "resource",
+          "type": "string",
+          "default": "Consolas, 'Courier New', monospace",
+          "description": "Font family for code copied for presentations."
+        },
+        "svLsp.presentation.fontSize": {
+          "scope": "resource",
+          "type": "number",
+          "default": 14,
+          "description": "Default font size (px) for code copied for presentations."
+        },
+        "svLsp.presentation.theme": {
+          "scope": "resource",
+          "type": "string",
+          "enum": ["dark", "light"],
+          "default": "dark",
+          "description": "Default color theme for code copied for presentations."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

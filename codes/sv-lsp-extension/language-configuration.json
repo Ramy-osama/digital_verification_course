@@ -1,0 +1,37 @@
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["begin", "end"]
+  ],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "'", "close": "'", "notIn": ["string"] }
+  ],
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(module|class|function|task|begin|fork|case|generate|interface|package|program|covergroup|sequence|property)\\b",
+      "end": "^\\s*(endmodule|endclass|endfunction|endtask|end|join|join_any|join_none|endcase|endgenerate|endinterface|endpackage|endprogram|endgroup|endsequence|endproperty)\\b"
+    }
+  },
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(module|class|function|task|begin|fork|case|generate|interface|package|program|always|always_ff|always_comb|always_latch|initial|covergroup|constraint)\\b",
+    "decreaseIndentPattern": "^\\s*(endmodule|endclass|endfunction|endtask|end|join|join_any|join_none|endcase|endgenerate|endinterface|endpackage|endprogram|endgroup)\\b"
+  },
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)"
+}

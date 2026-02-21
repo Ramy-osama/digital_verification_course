@@ -1,0 +1,9 @@
+# ModelSim/QuestaSim simulation artifacts
+*.wlf
+transcript
+
+# ModelSim/QuestaSim compilation artifacts
+work/
+
+# Node.js dependencies
+node_modules/
